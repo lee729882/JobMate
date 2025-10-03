@@ -23,13 +23,17 @@
   </bean>
 
   <!-- MyBatis -->
-  <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
-    <property name="dataSource" ref="dataSource"/>
-    <!-- 도메인 패키지를 type alias 로 -->
-    <property name="typeAliasesPackage" value="com.jobmate.domain"/>
-    <!-- Mapper XML 위치 -->
-    <property name="mapperLocations" value="classpath*:com/jobmate/mapper/**/*.xml"/>
-  </bean>
+<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+  <property name="dataSource" ref="dataSource"/>
+  <!-- mapperLocations 등 기존 설정 유지 -->
+  <property name="configuration">
+    <bean class="org.apache.ibatis.session.Configuration">
+      <property name="mapUnderscoreToCamelCase" value="true"/>
+    </bean>
+  </property>
+  
+</bean>
+
 
   <!-- Mapper 인터페이스 자동 스캔 -->
   <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">

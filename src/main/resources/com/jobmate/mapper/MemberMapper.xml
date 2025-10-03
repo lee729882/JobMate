@@ -5,39 +5,30 @@
 
 <mapper namespace="com.jobmate.mapper.MemberMapper">
 
-    <insert id="insertMember" parameterType="com.jobmate.domain.Member">
-        INSERT INTO member
-        (
-            username,
-            password,
-            email,
-            name,
-            career_type,
-            edu_code,
-            min_salary,
-            job_codes,
-            work_region_codes
-        )
-        VALUES
-        (
-            #{username},
-            #{password},
-            #{email},
-            #{name},
-            #{careerType},
-            #{eduCode},
-            #{minSalary},
-            #{jobCodes},
-            #{workRegionCodes}
-        )
-    </insert>
-	  <select id="findByUsername" parameterType="string" resultType="com.jobmate.domain.Member">
-	    SELECT
-	      ID, USERNAME, PASSWORD, EMAIL, NAME,
-	      CAREER_TYPE, EDU_CODE, MIN_SALARY,
-	      JOB_CODES, WORK_REGION_CODES,
-	      CREATED_AT
-	    FROM MEMBER
-	    WHERE USERNAME = #{username}
-	  </select>
+  <!-- INSERT: NAME이 NVARCHAR2라면 jdbcType=NVARCHAR 권장 -->
+  <insert id="insertMember" parameterType="com.jobmate.domain.Member">
+    INSERT INTO MEMBER (
+      USERNAME, PASSWORD, EMAIL, NAME,
+      CAREER_TYPE, EDU_CODE, MIN_SALARY,
+      JOB_CODES, WORK_REGION_CODES
+    )
+    VALUES (
+      #{username}, #{password}, #{email},
+      #{name, jdbcType=NVARCHAR},
+      #{careerType}, #{eduCode}, #{minSalary},
+      #{jobCodes}, #{workRegionCodes}
+    )
+  </insert>
+
+  <!-- SELECT: mapUnderscoreToCamelCase=true면 resultType으로 충분 -->
+  <select id="findByUsername" parameterType="string" resultType="com.jobmate.domain.Member">
+    SELECT
+      ID, USERNAME, PASSWORD, EMAIL, NAME,
+      CAREER_TYPE, EDU_CODE, MIN_SALARY,
+      JOB_CODES, WORK_REGION_CODES
+      -- , CREATED_AT   <!-- 필요 시 주석 해제하고 Member에 필드 추가 -->
+    FROM MEMBER
+    WHERE USERNAME = #{username}
+  </select>
+
 </mapper>
