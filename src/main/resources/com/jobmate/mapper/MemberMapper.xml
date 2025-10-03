@@ -5,6 +5,20 @@
 
 <mapper namespace="com.jobmate.mapper.MemberMapper">
 
+  <!-- 아이디 중복 여부 -->
+  <select id="existsByUsername" parameterType="string" resultType="int">
+    SELECT CASE WHEN COUNT(1) > 0 THEN 1 ELSE 0 END
+    FROM MEMBER
+    WHERE USERNAME = #{username}
+  </select>
+
+  <!-- 이메일 중복 여부 -->
+  <select id="existsByEmail" parameterType="string" resultType="int">
+    SELECT CASE WHEN COUNT(1) > 0 THEN 1 ELSE 0 END
+    FROM MEMBER
+    WHERE EMAIL = #{email}
+  </select>
+  
   <!-- INSERT: NAME이 NVARCHAR2라면 jdbcType=NVARCHAR 권장 -->
   <insert id="insertMember" parameterType="com.jobmate.domain.Member">
     INSERT INTO MEMBER (

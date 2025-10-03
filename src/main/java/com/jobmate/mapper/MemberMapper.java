@@ -7,6 +7,9 @@ import com.jobmate.domain.Member;
 
 @Mapper
 public interface MemberMapper {
+    int existsByUsername(@Param("username") String username);
+    int existsByEmail(@Param("email") String email);
+
     void insertMember(Member member);
     Member findByUsername(@Param("username") String username); // 추가
 

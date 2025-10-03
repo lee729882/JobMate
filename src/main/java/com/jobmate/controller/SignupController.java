@@ -1,12 +1,17 @@
 package com.jobmate.controller;
 
 import com.jobmate.dto.MemberDto;
+import com.jobmate.exception.DuplicateEmailException;
+import com.jobmate.exception.DuplicateUsernameException;
 import com.jobmate.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import javax.validation.Valid;  
 
 @Controller
 @RequestMapping("/member")
@@ -26,19 +31,35 @@ public class SignupController {
 
     // 회원가입 처리
     @PostMapping("/signup")
-    public String doSignup(@ModelAttribute("member") MemberDto member,
+    public String doSignup(@Valid @ModelAttribute("member") MemberDto member,
+                           BindingResult bindingResult,
                            RedirectAttributes ra,
                            Model model) {
+        // 1) DTO 검증 에러(@Valid) 있으면 바로 폼으로
+        if (bindingResult.hasErrors()) {
+            return "signup";
+        }
+
         try {
-            // 가입 처리 (DB 저장)
             memberService.register(member);
 
-            // 성공 시 PRG 패턴 적용
+            // 성공 시 PRG
             ra.addAttribute("username", member.getUsername());
             return "redirect:/member/success";
 
+        } catch (DuplicateUsernameException ex) {
+            // username 필드에 바인딩 에러 추가
+            bindingResult.addError(new FieldError("member", "username", ex.getMessage()));
+            return "signup";
+
+        } catch (DuplicateEmailException ex) {
+            // email 필드에 바인딩 에러 추가
+            bindingResult.addError(new FieldError("member", "email", ex.getMessage()));
+            return "signup";
+
         } catch (Exception e) {
-            model.addAttribute("error", "회원가입 실패: " + e.getMessage());
+            // 알 수 없는 에러는 글로벌 에러로
+            bindingResult.reject("signupFailed", "회원가입 실패: " + e.getMessage());
             return "signup";
         }
     }

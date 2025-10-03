@@ -1,5 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -116,6 +118,10 @@
       color: #ffffff;
       font-weight: bold;
     }
+    
+    .error{ color:var(--error); font-size:12px; margin-top:6px; }
+    
+    
   </style>
 </head>
 <body>
@@ -134,73 +140,98 @@
         <div class="error">${error}</div>
       </c:if>
 
-      <form action="${pageContext.request.contextPath}/member/signup" method="post" autocomplete="off">
-        <div class="grid">
-          <!-- 기본 정보 -->
-          <div class="col-6"><label for="username">아이디 *</label>
-            <input id="username" name="username" type="text" value="${form.username}" required /></div>
-          <div class="col-6"><label for="password">비밀번호 *</label>
-            <input id="password" name="password" type="password" required /></div>
-          <div class="col-6"><label for="email">이메일 *</label>
-            <input id="email" name="email" type="email" value="${form.email}" required /></div>
-          <div class="col-6"><label for="name">이름</label>
-            <input id="name" name="name" type="text" value="${form.name}" /></div>
+<form:form modelAttribute="member" action="${pageContext.request.contextPath}/member/signup" method="post" autocomplete="off">
+  <div class="grid">
+    <!-- 기본 정보 -->
+    <div class="col-6">
+      <label for="username">아이디 *</label>
+      <form:input path="username" id="username"/>
+      <form:errors path="username" cssClass="error"/>
+    </div>
 
-          <!-- 경력/학력 -->
-          <div class="col-6">
-            <label for="careerType">경력 여부 *</label>
-            <select id="careerType" name="careerType" required>
-              <option value="">선택</option>
-              <option value="NEW" ${form.careerType=='NEW'?'selected':''}>신입</option>
-              <option value="EXP" ${form.careerType=='EXP'?'selected':''}>경력</option>
-              <option value="ANY" ${form.careerType=='ANY'?'selected':''}>무관</option>
-            </select>
-          </div>
-          <div class="col-6">
-            <label for="eduCode">학력 *</label>
-            <select id="eduCode" name="eduCode" required>
-              <option value="">선택</option>
-              <option value="ANY" ${form.eduCode=='ANY'?'selected':''}>무관</option>
-              <option value="HS" ${form.eduCode=='HS'?'selected':''}>고졸</option>
-              <option value="AD" ${form.eduCode=='AD'?'selected':''}>초대졸</option>
-              <option value="BA" ${form.eduCode=='BA'?'selected':''}>학사</option>
-              <option value="MA" ${form.eduCode=='MA'?'selected':''}>석사</option>
-              <option value="PHD" ${form.eduCode=='PHD'?'selected':''}>박사</option>
-            </select>
-          </div>
+    <div class="col-6">
+      <label for="password">비밀번호 *</label>
+      <form:password path="password" id="password"/>
+      <form:errors path="password" cssClass="error"/>
+    </div>
 
-          <!-- 희망 직종 -->
-          <div class="col-12">
-            <label>희망 직종(다중 선택) *</label>
-            <div class="cascader" id="jobCategory">
-              <div class="pane" data-pane="macro"></div>
-              <div class="pane" data-pane="micro"></div>
-            </div>
-            <div class="selected-bar" id="jobCategorySelected"></div>
-          </div>
+    <div class="col-6">
+      <label for="email">이메일 *</label>
+      <form:input path="email" id="email" type="email"/>
+      <form:errors path="email" cssClass="error"/>
+    </div>
 
-          <!-- 근무지역 -->
-          <div class="col-12">
-            <label>근무지역(다중 선택) *</label>
-            <div class="cascader" id="workRegion">
-              <div class="pane" data-pane="macro"></div>
-              <div class="pane" data-pane="micro"></div>
-            </div>
-            <div class="selected-bar" id="workRegionSelected"></div>
-          </div>
+    <div class="col-6">
+      <label for="name">이름</label>
+      <form:input path="name" id="name"/>
+      <form:errors path="name" cssClass="error"/>
+    </div>
 
-          <!-- 희망 연봉 -->
-          <div class="col-6">
-            <label for="minSalary">희망 연봉 하한(만원)</label>
-            <input id="minSalary" name="minSalary" type="number" min="0" step="100" value="${form.minSalary}" placeholder="예) 3000" />
-          </div>
-        </div>
+    <!-- 경력/학력 -->
+    <div class="col-6">
+      <label for="careerType">경력 여부 *</label>
+      <form:select path="careerType" id="careerType">
+        <form:option value="" label="선택"/>
+        <form:option value="NEW" label="신입"/>
+        <form:option value="EXP" label="경력"/>
+        <form:option value="ANY" label="무관"/>
+      </form:select>
+      <form:errors path="careerType" cssClass="error"/>
+    </div>
 
-        <div class="actions">
-          <button type="button" class="btn btn-secondary" onclick="history.back()">돌아가기</button>
-          <button class="btn" type="submit">회원가입 완료</button>
-        </div>
-      </form>
+    <div class="col-6">
+      <label for="eduCode">학력 *</label>
+      <form:select path="eduCode" id="eduCode">
+        <form:option value=""   label="선택"/>
+        <form:option value="ANY" label="무관"/>
+        <form:option value="HS"  label="고졸"/>
+        <form:option value="AD"  label="초대졸"/>
+        <form:option value="BA"  label="학사"/>
+        <form:option value="MA"  label="석사"/>
+        <form:option value="PHD" label="박사"/>
+      </form:select>
+      <form:errors path="eduCode" cssClass="error"/>
+    </div>
+
+    <!-- 희망 직종 -->
+    <div class="col-12">
+      <label>희망 직종(다중 선택) *</label>
+      <div class="cascader" id="jobCategory">
+        <div class="pane" data-pane="macro"></div>
+        <div class="pane" data-pane="micro"></div>
+      </div>
+      <div class="selected-bar" id="jobCategorySelected"></div>
+      <form:errors path="jobCodes" cssClass="error"/>
+    </div>
+
+    <!-- 근무지역 -->
+    <div class="col-12">
+      <label>근무지역(다중 선택) *</label>
+      <div class="cascader" id="workRegion">
+        <div class="pane" data-pane="macro"></div>
+        <div class="pane" data-pane="micro"></div>
+      </div>
+      <div class="selected-bar" id="workRegionSelected"></div>
+      <form:errors path="workRegionCodes" cssClass="error"/>
+    </div>
+
+    <!-- 희망 연봉 -->
+    <div class="col-6">
+      <label for="minSalary">희망 연봉 하한(만원)</label>
+      <form:input path="minSalary" id="minSalary" type="number" min="0" step="100" placeholder="예) 3000"/>
+      <form:errors path="minSalary" cssClass="error"/>
+    </div>
+  </div>
+
+  <!-- 글로벌 에러 (예: signupFailed) -->
+  <form:errors path="" cssClass="error"/>
+
+  <div class="actions">
+    <button type="button" class="btn btn-secondary" onclick="history.back()">돌아가기</button>
+    <button class="btn" type="submit">회원가입 완료</button>
+  </div>
+</form:form>
+
     </div>
   </div>
 

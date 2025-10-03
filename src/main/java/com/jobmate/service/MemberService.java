@@ -7,6 +7,8 @@ import org.springframework.util.StringUtils;
 
 import com.jobmate.domain.Member;
 import com.jobmate.dto.MemberDto;
+import com.jobmate.exception.DuplicateEmailException;
+import com.jobmate.exception.DuplicateUsernameException;
 import com.jobmate.mapper.MemberMapper;
 
 import java.util.StringJoiner;
@@ -18,6 +20,17 @@ public class MemberService {
     private MemberMapper memberMapper;
 
     public void register(MemberDto dto) {
+    	
+        // 아이디 중복 체크
+        if (memberMapper.existsByUsername(dto.getUsername()) > 0) {
+            throw new DuplicateUsernameException("이미 사용 중인 아이디입니다.");
+        }
+
+        // 이메일 중복 체크
+        if (memberMapper.existsByEmail(dto.getEmail()) > 0) {
+            throw new DuplicateEmailException("이미 사용 중인 이메일입니다.");
+        }
+        
         Member member = new Member();
         member.setUsername(dto.getUsername());
         member.setPassword(dto.getPassword()); // 실제 운영 시 반드시 BCrypt 등으로 해시 권장

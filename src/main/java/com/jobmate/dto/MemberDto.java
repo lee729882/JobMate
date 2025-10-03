@@ -3,16 +3,27 @@ package com.jobmate.dto;
 import java.util.Arrays;
 import com.jobmate.mapper.MemberMapper;
 
+import org.apache.logging.log4j.core.config.plugins.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class MemberDto {
+    @NotBlank(message = "아이디는 필수입니다.")
     private String username;
+
+    @NotBlank(message = "비밀번호는 필수입니다.")
     private String password;
+
+    @NotBlank(message = "이메일은 필수입니다.")
     private String email;
+
     private String name;
 
-    private String careerType; // NEW/EXP/ANY
-    private String eduCode;    // ANY/HS/AD/BA/MA/PHD
+    @NotBlank(message = "경력 여부를 선택하세요.")
+    private String careerType;
+
+    @NotBlank(message = "학력을 선택하세요.")
+    private String eduCode;
+
     private Integer minSalary;
 
     // 다중 선택 값 (hidden inputs 로 넘어옴)

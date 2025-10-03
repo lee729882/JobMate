@@ -167,6 +167,28 @@
             <version>1.18.0</version>
             <scope>provided</scope>
         </dependency>
+        <!-- Bean Validation API (javax) -->
+		<dependency>
+		  <groupId>javax.validation</groupId>
+		  <artifactId>validation-api</artifactId>
+		  <version>2.0.1.Final</version>
+		</dependency>
+		
+		<!-- 구현체: Hibernate Validator 6.x (Spring 5와 호환) -->
+		<dependency>
+		  <groupId>org.hibernate.validator</groupId>
+		  <artifactId>hibernate-validator</artifactId>
+		  <version>6.2.5.Final</version>
+		</dependency>
+		
+		<!-- EL 구현 (표현식 팩토리 ClassNotFound 방지) -->
+		<dependency>
+		  <groupId>org.glassfish</groupId>
+		  <artifactId>javax.el</artifactId>
+		  <version>3.0.0</version>
+		</dependency>
+		        
+        
     </dependencies>
 
     <build>
