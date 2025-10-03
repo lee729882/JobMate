@@ -15,7 +15,7 @@ public class HomeController {
     // /controller/home  → 매칭
 	@GetMapping({"/", "/home", "/index"})
 	public String index() {
-	    return "redirect:/member/signup";
+	    return "redirect:/member/login";
 	}
 
 }
