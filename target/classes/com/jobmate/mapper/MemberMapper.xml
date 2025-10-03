@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jobmate.mapper.MemberMapper">
+
+    <insert id="insertMember" parameterType="com.jobmate.domain.Member">
+        INSERT INTO member
+        (
+            username,
+            password,
+            email,
+            name,
+            career_type,
+            edu_code,
+            min_salary,
+            job_codes,
+            work_region_codes
+        )
+        VALUES
+        (
+            #{username},
+            #{password},
+            #{email},
+            #{name},
+            #{careerType},
+            #{eduCode},
+            #{minSalary},
+            #{jobCodes},
+            #{workRegionCodes}
+        )
+    </insert>
+
+</mapper>
