@@ -75,4 +75,8 @@ public class MemberService {
         // 현재는 평문 비교 (초기 데이터 호환)
         return stored.equals(rawPassword) ? found : null;
     }
+    
+    public Member findByUsername(String username) {
+        return memberMapper.findByUsername(username);
+    }
 }

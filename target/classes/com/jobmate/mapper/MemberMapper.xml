@@ -19,20 +19,29 @@
     WHERE EMAIL = #{email}
   </select>
   
-  <!-- INSERT: NAME이 NVARCHAR2라면 jdbcType=NVARCHAR 권장 -->
-  <insert id="insertMember" parameterType="com.jobmate.domain.Member">
-    INSERT INTO MEMBER (
-      USERNAME, PASSWORD, EMAIL, NAME,
-      CAREER_TYPE, EDU_CODE, MIN_SALARY,
-      JOB_CODES, WORK_REGION_CODES
-    )
-    VALUES (
-      #{username}, #{password}, #{email},
-      #{name, jdbcType=NVARCHAR},
-      #{careerType}, #{eduCode}, #{minSalary},
-      #{jobCodes}, #{workRegionCodes}
-    )
-  </insert>
+<insert id="insertMember" parameterType="com.jobmate.domain.Member">
+  INSERT INTO MEMBER (
+    ID,
+    USERNAME, PASSWORD, EMAIL, NAME,
+    CAREER_TYPE, EDU_CODE, MIN_SALARY,
+    JOB_CODES, WORK_REGION_CODES
+  )
+  VALUES (
+    MEMBER_SEQ.NEXTVAL,
+    #{username},
+    #{password},
+    #{email},
+    <!-- NAME 이 NVARCHAR2면 NVARCHAR, VARCHAR2면 VARCHAR 로 바꿔주세요 -->
+    #{name, jdbcType=NVARCHAR},
+    #{careerType, jdbcType=VARCHAR},
+    #{eduCode,    jdbcType=VARCHAR},
+    <!-- NUMBER 컬럼이면 NUMERIC/DECIMAL/INTEGER 중 하나 (NUMBER(p,0)면 INTEGER도 가능) -->
+    #{minSalary,  jdbcType=NUMERIC},
+    #{jobCodes,        jdbcType=VARCHAR},
+    #{workRegionCodes, jdbcType=VARCHAR}
+  )
+</insert>
+
 
   <!-- SELECT: mapUnderscoreToCamelCase=true면 resultType으로 충분 -->
   <select id="findByUsername" parameterType="string" resultType="com.jobmate.domain.Member">

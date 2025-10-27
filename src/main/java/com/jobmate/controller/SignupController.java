@@ -12,6 +12,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.validation.Valid;  
+import com.jobmate.domain.MemberPreference;
+import com.jobmate.service.MemberPreferenceService;
 
 @Controller
 @RequestMapping("/member")
@@ -20,6 +22,10 @@ public class SignupController {
     @Autowired
     private MemberService memberService;
 
+    @Autowired
+    private MemberPreferenceService preferenceService;
+
+    
     // 회원가입 폼
     @GetMapping("/signup")
     public String signupForm(Model model) {
@@ -43,9 +49,23 @@ public class SignupController {
         try {
             memberService.register(member);
 
-            // 성공 시 PRG
-            ra.addAttribute("username", member.getUsername());
-            return "redirect:/member/success";
+            // 3) 방금 가입한 회원의 ID 확보
+            //    - register() 가 ID를 리턴하지 않는 경우를 가정 → username으로 조회
+            Long memberId = memberService.findByUsername(member.getUsername()).getId();
+
+            // 4) 선호정보 upsert (DTO에 선호 필드가 존재한다고 가정: occCodes, regionCodes, employmentType, careerLevel, keyword)
+            MemberPreference pref = new MemberPreference();
+            pref.setMemberId(memberId);
+            pref.setOccCodesCsv(member.getOccCodes() == null ? null : String.join(",", member.getOccCodes()));
+            pref.setRegionCodesCsv(member.getRegionCodes() == null ? null : String.join(",", member.getRegionCodes()));
+            pref.setEmploymentType(member.getEmploymentType());
+            pref.setCareerLevel(member.getCareerLevel());
+            pref.setKeyword(member.getKeyword());
+            preferenceService.save(pref);
+
+            // 5) PRG: 추천 목록으로 바로 이동
+            ra.addFlashAttribute("msg", "회원가입 완료! 맞춤 채용을 불러옵니다.");
+            return "redirect:/jobs/recommendations";
 
         } catch (DuplicateUsernameException ex) {
             // username 필드에 바인딩 에러 추가

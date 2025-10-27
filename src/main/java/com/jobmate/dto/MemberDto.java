@@ -30,6 +30,25 @@ public class MemberDto {
     private String[] jobCodes;         // 예: ["JOB101","JOB502"]
     private String[] workRegionCodes;  // 예: ["11010","31020"]
 
+ // MemberDto에 아래 필드를 추가
+    private String[] occCodes;
+    private String[] regionCodes;
+    private String employmentType;
+    private String careerLevel;
+    private String keyword;
+
+    // getter/setter 추가
+    public String[] getOccCodes() { return occCodes; }
+    public void setOccCodes(String[] occCodes) { this.occCodes = occCodes; }
+    public String[] getRegionCodes() { return regionCodes; }
+    public void setRegionCodes(String[] regionCodes) { this.regionCodes = regionCodes; }
+    public String getEmploymentType() { return employmentType; }
+    public void setEmploymentType(String employmentType) { this.employmentType = employmentType; }
+    public String getCareerLevel() { return careerLevel; }
+    public void setCareerLevel(String careerLevel) { this.careerLevel = careerLevel; }
+    public String getKeyword() { return keyword; }
+    public void setKeyword(String keyword) { this.keyword = keyword; }
+
     public MemberDto() {}
 
     public String getUsername() { return username; }

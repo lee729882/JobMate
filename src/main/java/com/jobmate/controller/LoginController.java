@@ -40,7 +40,7 @@ public class LoginController {
         }
         session.setAttribute("loginMember", found);
         ra.addFlashAttribute("loginMsg", found.getUsername() + "님 환영합니다!");
-        return "redirect:/member/success"; // 성공 후 원하는 경로로 변경 가능
+        return "redirect:/recommendations"; // 성공 후 원하는 경로로 변경 가능
     }
 
     // 로그아웃
