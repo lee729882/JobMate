@@ -63,9 +63,11 @@ public class SignupController {
             pref.setKeyword(member.getKeyword());
             preferenceService.save(pref);
 
-            // 5) PRG: 추천 목록으로 바로 이동
-            ra.addFlashAttribute("msg", "회원가입 완료! 맞춤 채용을 불러옵니다.");
-            return "redirect:/jobs/recommendations";
+         // 5) 회원가입 완료 페이지로 이동 (signup-success.jsp)
+            ra.addAttribute("username", member.getUsername());
+            ra.addAttribute("memberId", memberService.findByUsername(member.getUsername()).getId());
+            return "redirect:/member/success";
+
 
         } catch (DuplicateUsernameException ex) {
             // username 필드에 바인딩 에러 추가
@@ -89,6 +91,7 @@ public class SignupController {
     public String success(@RequestParam(value = "username", required = false) String username,
                           Model model) {
         model.addAttribute("username", username);
-        return "signup-success"; // -> /WEB-INF/views/signup-success.jsp
+        return "signup-success"; // /WEB-INF/views/signup-success.jsp
     }
+
 }
