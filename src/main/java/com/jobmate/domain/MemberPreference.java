@@ -1,26 +1,45 @@
 package com.jobmate.domain;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class MemberPreference {
+
     private Long id;
     private Long memberId;
-    private String occCodesCsv;     // "134100,134200"
-    private String regionCodesCsv;  // "11000,41000"
-    private String employmentType;  // 정규/계약/시간제 등
-    private String careerLevel;     // 신입/경력/무관 등
-    private String keyword;         // 자유 키워드
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public Long getMemberId() { return memberId; }
-    public void setMemberId(Long memberId) { this.memberId = memberId; }
-    public String getOccCodesCsv() { return occCodesCsv; }
-    public void setOccCodesCsv(String occCodesCsv) { this.occCodesCsv = occCodesCsv; }
-    public String getRegionCodesCsv() { return regionCodesCsv; }
-    public void setRegionCodesCsv(String regionCodesCsv) { this.regionCodesCsv = regionCodesCsv; }
-    public String getEmploymentType() { return employmentType; }
-    public void setEmploymentType(String employmentType) { this.employmentType = employmentType; }
-    public String getCareerLevel() { return careerLevel; }
-    public void setCareerLevel(String careerLevel) { this.careerLevel = careerLevel; }
-    public String getKeyword() { return keyword; }
-    public void setKeyword(String keyword) { this.keyword = keyword; }
+    // ✅ Mapper XML과 필드명 일치
+    private String occCodesCsv;
+    private String regionCodesCsv;
+
+    private String employmentType;
+    private String careerLevel;
+    private String keyword;
+
+    // ✅ CSV → 배열 변환 (선택적으로 사용)
+    public String[] getOccCodesArray() {
+        return (occCodesCsv != null && !occCodesCsv.isEmpty())
+                ? occCodesCsv.split(",")
+                : new String[0];
+    }
+
+    public String[] getRegionCodesArray() {
+        return (regionCodesCsv != null && !regionCodesCsv.isEmpty())
+                ? regionCodesCsv.split(",")
+                : new String[0];
+    }
+
+    @Override
+    public String toString() {
+        return "MemberPreference{" +
+                "memberId=" + memberId +
+                ", occCodesCsv='" + occCodesCsv + '\'' +
+                ", regionCodesCsv='" + regionCodesCsv + '\'' +
+                ", employmentType='" + employmentType + '\'' +
+                ", careerLevel='" + careerLevel + '\'' +
+                ", keyword='" + keyword + '\'' +
+                '}';
+    }
 }

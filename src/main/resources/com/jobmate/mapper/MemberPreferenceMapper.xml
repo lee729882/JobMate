@@ -5,8 +5,21 @@
 
 <mapper namespace="com.jobmate.mapper.MemberPreferenceMapper">
 
-  <!-- Oracle MERGE: 존재하면 UPDATE, 없으면 INSERT -->
-<insert id="upsert" parameterType="com.jobmate.domain.MemberPreference">
+  <!-- 회원 ID로 조회 -->
+  <select id="findByMemberId" parameterType="long" resultType="com.jobmate.domain.MemberPreference">
+    SELECT ID,
+           MEMBER_ID,
+           OCC_CODES AS occCodesCsv,
+           REGION_CODES AS regionCodesCsv,
+           EMPLOYMENT_TYPE,
+           CAREER_LEVEL,
+           KEYWORD
+    FROM MEMBER_PREFERENCE
+    WHERE MEMBER_ID = #{memberId}
+  </select>
+
+  <!-- MERGE (INSERT or UPDATE) -->
+  <insert id="upsert" parameterType="com.jobmate.domain.MemberPreference">
     MERGE INTO MEMBER_PREFERENCE target
     USING (SELECT #{memberId, jdbcType=NUMERIC} AS MEMBER_ID FROM DUAL) src
     ON (target.MEMBER_ID = src.MEMBER_ID)
@@ -19,15 +32,8 @@
         KEYWORD = #{keyword, jdbcType=VARCHAR}
     WHEN NOT MATCHED THEN
       INSERT (MEMBER_ID, OCC_CODES, REGION_CODES, EMPLOYMENT_TYPE, CAREER_LEVEL, KEYWORD)
-      VALUES (
-        #{memberId, jdbcType=NUMERIC},
-        #{occCodesCsv, jdbcType=VARCHAR},
-        #{regionCodesCsv, jdbcType=VARCHAR},
-        #{employmentType, jdbcType=VARCHAR},
-        #{careerLevel, jdbcType=VARCHAR},
-        #{keyword, jdbcType=VARCHAR}
-      )
-</insert>
+      VALUES (#{memberId}, #{occCodesCsv}, #{regionCodesCsv}, #{employmentType}, #{careerLevel}, #{keyword});
+  </insert>
 
 
   <!-- 특정 회원의 선호도 조회 -->

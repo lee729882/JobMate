@@ -11,6 +11,7 @@ import com.jobmate.exception.DuplicateEmailException;
 import com.jobmate.exception.DuplicateUsernameException;
 import com.jobmate.mapper.MemberMapper;
 
+import java.util.List;
 import java.util.StringJoiner;
 
 @Service
@@ -18,6 +19,11 @@ public class MemberService {
 
     @Autowired
     private MemberMapper memberMapper;
+    private String toCsv(List<String> values) {
+        if (values == null || values.isEmpty()) return null;
+        return String.join(",", values);
+    }
+
 
     public void register(MemberDto dto) {
     	

@@ -1,10 +1,8 @@
 package com.jobmate.dto;
 
+import org.hibernate.validator.constraints.NotBlank;
 import java.util.Arrays;
-import com.jobmate.mapper.MemberMapper;
-
-import org.apache.logging.log4j.core.config.plugins.validation.constraints.NotBlank;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
 
 public class MemberDto {
     @NotBlank(message = "아이디는 필수입니다.")
@@ -26,31 +24,24 @@ public class MemberDto {
 
     private Integer minSalary;
 
-    // 다중 선택 값 (hidden inputs 로 넘어옴)
-    private String[] jobCodes;         // 예: ["JOB101","JOB502"]
-    private String[] workRegionCodes;  // 예: ["11010","31020"]
+    /** ✅ 희망 직종 / 근무지역 (다중선택) */
+    private List<String> jobCodes;          // ex) ["JOB501", "JOB502"]
+    private List<String> workRegionCodes;   // ex) ["11010", "31020"]
 
- // MemberDto에 아래 필드를 추가
-    private String[] occCodes;
-    private String[] regionCodes;
+    /** ✅ 추가 입력 항목 */
     private String employmentType;
     private String careerLevel;
     private String keyword;
 
-    // getter/setter 추가
-    public String[] getOccCodes() { return occCodes; }
-    public void setOccCodes(String[] occCodes) { this.occCodes = occCodes; }
-    public String[] getRegionCodes() { return regionCodes; }
-    public void setRegionCodes(String[] regionCodes) { this.regionCodes = regionCodes; }
-    public String getEmploymentType() { return employmentType; }
-    public void setEmploymentType(String employmentType) { this.employmentType = employmentType; }
-    public String getCareerLevel() { return careerLevel; }
-    public void setCareerLevel(String careerLevel) { this.careerLevel = careerLevel; }
-    public String getKeyword() { return keyword; }
-    public void setKeyword(String keyword) { this.keyword = keyword; }
+    /** ✅ CSV 변환 메서드 (DB 저장용) */
+    public String getJobCodesCsv() {
+        return (jobCodes == null || jobCodes.isEmpty()) ? null : String.join(",", jobCodes);
+    }
+    public String getWorkRegionCodesCsv() {
+        return (workRegionCodes == null || workRegionCodes.isEmpty()) ? null : String.join(",", workRegionCodes);
+    }
 
-    public MemberDto() {}
-
+    // ===== Getter / Setter =====
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
 
@@ -72,20 +63,20 @@ public class MemberDto {
     public Integer getMinSalary() { return minSalary; }
     public void setMinSalary(Integer minSalary) { this.minSalary = minSalary; }
 
-    public String[] getJobCodes() { return jobCodes; }
-    public void setJobCodes(String[] jobCodes) { this.jobCodes = jobCodes; }
+    public List<String> getJobCodes() { return jobCodes; }
+    public void setJobCodes(List<String> jobCodes) { this.jobCodes = jobCodes; }
 
-    public String[] getWorkRegionCodes() { return workRegionCodes; }
-    public void setWorkRegionCodes(String[] workRegionCodes) { this.workRegionCodes = workRegionCodes; }
+    public List<String> getWorkRegionCodes() { return workRegionCodes; }
+    public void setWorkRegionCodes(List<String> workRegionCodes) { this.workRegionCodes = workRegionCodes; }
 
-    
- // MemberDto.java (아래 2개 메서드 추가)
-    public String getJobCodesCsv() {
-        return (jobCodes == null || jobCodes.length == 0) ? null : String.join(",", jobCodes);
-    }
-    public String getWorkRegionCodesCsv() {
-        return (workRegionCodes == null || workRegionCodes.length == 0) ? null : String.join(",", workRegionCodes);
-    }
+    public String getEmploymentType() { return employmentType; }
+    public void setEmploymentType(String employmentType) { this.employmentType = employmentType; }
+
+    public String getCareerLevel() { return careerLevel; }
+    public void setCareerLevel(String careerLevel) { this.careerLevel = careerLevel; }
+
+    public String getKeyword() { return keyword; }
+    public void setKeyword(String keyword) { this.keyword = keyword; }
 
     @Override
     public String toString() {
@@ -96,8 +87,8 @@ public class MemberDto {
                 ", careerType='" + careerType + '\'' +
                 ", eduCode='" + eduCode + '\'' +
                 ", minSalary=" + minSalary +
-                ", jobCodes=" + Arrays.toString(jobCodes) +
-                ", workRegionCodes=" + Arrays.toString(workRegionCodes) +
+                ", jobCodes=" + jobCodes +
+                ", workRegionCodes=" + workRegionCodes +
                 '}';
     }
 }

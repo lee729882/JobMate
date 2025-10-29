@@ -1,7 +1,8 @@
 package com.jobmate.service;
 
+import com.jobmate.domain.JobPosting;
 import com.jobmate.domain.MemberPreference;
-import com.jobmate.dto.JobPosting;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

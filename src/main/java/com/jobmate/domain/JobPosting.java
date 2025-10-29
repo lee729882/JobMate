@@ -1,4 +1,4 @@
-package com.jobmate.dto;
+package com.jobmate.domain;
 
 public class JobPosting {
     private String source;          // "WORK24" 등

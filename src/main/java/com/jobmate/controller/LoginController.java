@@ -44,8 +44,8 @@ public class LoginController {
         session.setAttribute("loginMember", found);
         ra.addFlashAttribute("loginMsg", found.getUsername() + "님 환영합니다!");
 
-        // 로그인 성공 시 추천 페이지로 이동
-        return "recommendations";
+     // 로그인 성공 시 추천 페이지로 이동
+        return "redirect:/jobs/recommendations";
     }
 
     // ✅ 로그아웃

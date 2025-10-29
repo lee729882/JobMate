@@ -56,8 +56,8 @@ public class SignupController {
             // 4) 선호정보 upsert (DTO에 선호 필드가 존재한다고 가정: occCodes, regionCodes, employmentType, careerLevel, keyword)
             MemberPreference pref = new MemberPreference();
             pref.setMemberId(memberId);
-            pref.setOccCodesCsv(member.getOccCodes() == null ? null : String.join(",", member.getOccCodes()));
-            pref.setRegionCodesCsv(member.getRegionCodes() == null ? null : String.join(",", member.getRegionCodes()));
+            pref.setOccCodesCsv(member.getJobCodesCsv());
+            pref.setRegionCodesCsv(member.getWorkRegionCodesCsv());
             pref.setEmploymentType(member.getEmploymentType());
             pref.setCareerLevel(member.getCareerLevel());
             pref.setKeyword(member.getKeyword());

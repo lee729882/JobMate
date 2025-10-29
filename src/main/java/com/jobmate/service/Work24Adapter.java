@@ -1,7 +1,8 @@
 package com.jobmate.service;
 
+import com.jobmate.domain.JobPosting;
 import com.jobmate.domain.MemberPreference;
-import com.jobmate.dto.JobPosting;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
