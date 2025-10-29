@@ -1,6 +1,8 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <!DOCTYPE html>
 <html lang="ko">
@@ -67,13 +69,28 @@
     .btn-secondary{ background:linear-gradient(135deg, #334155, #1f2937); }
 
     /* 카스케이딩 선택 박스 */
-    .cascader{
-      display:grid; grid-template-columns: 240px 1fr; gap:12px;
-      background:#0c1429; border:1px solid #1f2a49; border-radius:12px; padding:12px;
-    }
-    .pane{
-      background:#0b1220; border:1px solid #1b2442; border-radius:10px; overflow:auto; max-height:280px;
-    }
+.cascader {
+  display: grid;
+  grid-template-columns: 240px 240px 1fr; /* 3단계 모두 한 줄에 배치 */
+  gap: 12px;
+  background: #0c1429;
+  border: 1px solid #1f2a49;
+  border-radius: 12px;
+  padding: 12px;
+  overflow-x: auto; /* 혹시라도 공간이 좁을 경우 좌우 스크롤 허용 */
+}
+#workRegion.cascader {
+  grid-template-columns: 240px 1fr; /* 근무지역은 2단계만 */
+}
+.pane {
+  background: #0b1220;
+  border: 1px solid #1b2442;
+  border-radius: 10px;
+  overflow-y: auto;
+  max-height: 280px;
+  min-height: 220px;
+}
+
 
     .pane .item {
       padding:10px 12px;
@@ -125,227 +142,267 @@
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="brand">
-      <div class="logo"></div><h1>JobMate</h1>
-    </div>
-
-    <div class="card">
-      <div class="title">
-        <h2>회원가입</h2>
-        <div class="subtitle">몇 가지 정보만 입력하면 맞춤 채용을 추천해드려요.</div>
-      </div>
-
-      <c:if test="${not empty error}">
-        <div class="error">${error}</div>
-      </c:if>
-
-<form:form modelAttribute="member" action="${pageContext.request.contextPath}/member/signup" method="post" autocomplete="off">
-  <div class="grid">
-    <!-- 기본 정보 -->
-    <div class="col-6">
-      <label for="username">아이디 *</label>
-      <form:input path="username" id="username"/>
-      <form:errors path="username" cssClass="error"/>
-    </div>
-
-    <div class="col-6">
-      <label for="password">비밀번호 *</label>
-      <form:password path="password" id="password"/>
-      <form:errors path="password" cssClass="error"/>
-    </div>
-
-    <div class="col-6">
-      <label for="email">이메일 *</label>
-      <form:input path="email" id="email" type="email"/>
-      <form:errors path="email" cssClass="error"/>
-    </div>
-
-    <div class="col-6">
-      <label for="name">이름</label>
-      <form:input path="name" id="name"/>
-      <form:errors path="name" cssClass="error"/>
-    </div>
-
-    <!-- 경력/학력 -->
-    <div class="col-6">
-      <label for="careerType">경력 여부 *</label>
-      <form:select path="careerType" id="careerType">
-        <form:option value="" label="선택"/>
-        <form:option value="NEW" label="신입"/>
-        <form:option value="EXP" label="경력"/>
-        <form:option value="ANY" label="무관"/>
-      </form:select>
-      <form:errors path="careerType" cssClass="error"/>
-    </div>
-
-    <div class="col-6">
-      <label for="eduCode">학력 *</label>
-      <form:select path="eduCode" id="eduCode">
-        <form:option value=""   label="선택"/>
-        <form:option value="ANY" label="무관"/>
-        <form:option value="HS"  label="고졸"/>
-        <form:option value="AD"  label="초대졸"/>
-        <form:option value="BA"  label="학사"/>
-        <form:option value="MA"  label="석사"/>
-        <form:option value="PHD" label="박사"/>
-      </form:select>
-      <form:errors path="eduCode" cssClass="error"/>
-    </div>
-
-    <!-- 희망 직종 -->
-    <div class="col-12">
-      <label>희망 직종(다중 선택) *</label>
-      <div class="cascader" id="jobCategory">
-        <div class="pane" data-pane="macro"></div>
-        <div class="pane" data-pane="micro"></div>
-      </div>
-      <div class="selected-bar" id="jobCategorySelected"></div>
-      <form:errors path="jobCodes" cssClass="error"/>
-    </div>
-
-    <!-- 근무지역 -->
-    <div class="col-12">
-      <label>근무지역(다중 선택) *</label>
-      <div class="cascader" id="workRegion">
-        <div class="pane" data-pane="macro"></div>
-        <div class="pane" data-pane="micro"></div>
-      </div>
-      <div class="selected-bar" id="workRegionSelected"></div>
-      <form:errors path="workRegionCodes" cssClass="error"/>
-    </div>
-
-    <!-- 희망 연봉 -->
-    <div class="col-6">
-      <label for="minSalary">희망 연봉 하한(만원)</label>
-      <form:input path="minSalary" id="minSalary" type="number" min="0" step="100" placeholder="예) 3000"/>
-      <form:errors path="minSalary" cssClass="error"/>
-    </div>
+<div class="wrap">
+  <div class="brand">
+    <div class="logo"></div><h1>JobMate</h1>
   </div>
 
-  <!-- 글로벌 에러 (예: signupFailed) -->
-  <form:errors path="" cssClass="error"/>
-
-  <div class="actions">
-    <button type="button" class="btn btn-secondary" onclick="history.back()">돌아가기</button>
-    <button class="btn" type="submit">회원가입 완료</button>
-  </div>
-</form:form>
-
+  <div class="card">
+    <div class="title">
+      <h2>회원가입</h2>
+      <div class="subtitle">몇 가지 정보만 입력하면 맞춤 채용을 추천해드려요.</div>
     </div>
-  </div>
 
+    <c:if test="${not empty error}">
+      <div class="error">${error}</div>
+    </c:if>
+
+    <form:form modelAttribute="member" action="${pageContext.request.contextPath}/member/signup" method="post" autocomplete="off">
+      <div class="grid">
+
+        <!-- 기본정보 -->
+        <div class="col-6">
+          <label for="username">아이디 *</label>
+          <form:input path="username" id="username"/>
+          <form:errors path="username" cssClass="error"/>
+        </div>
+
+        <div class="col-6">
+          <label for="password">비밀번호 *</label>
+          <form:password path="password" id="password"/>
+          <form:errors path="password" cssClass="error"/>
+        </div>
+
+        <div class="col-6">
+          <label for="email">이메일 *</label>
+          <form:input path="email" id="email" type="email"/>
+          <form:errors path="email" cssClass="error"/>
+        </div>
+
+        <div class="col-6">
+          <label for="name">이름</label>
+          <form:input path="name" id="name"/>
+          <form:errors path="name" cssClass="error"/>
+        </div>
+
+        <!-- 경력/학력 -->
+        <div class="col-6">
+          <label for="careerType">경력 여부 *</label>
+          <form:select path="careerType" id="careerType">
+            <form:option value="" label="선택"/>
+            <form:option value="NEW" label="신입"/>
+            <form:option value="EXP" label="경력"/>
+            <form:option value="ANY" label="무관"/>
+          </form:select>
+          <form:errors path="careerType" cssClass="error"/>
+        </div>
+
+        <div class="col-6">
+          <label for="eduCode">학력 *</label>
+          <form:select path="eduCode" id="eduCode">
+            <form:option value="" label="선택"/>
+            <form:option value="ANY" label="무관"/>
+            <form:option value="HS" label="고졸"/>
+            <form:option value="AD" label="초대졸"/>
+            <form:option value="BA" label="학사"/>
+            <form:option value="MA" label="석사"/>
+            <form:option value="PHD" label="박사"/>
+          </form:select>
+          <form:errors path="eduCode" cssClass="error"/>
+        </div>
+
+        <!-- ✅ 희망 직종 -->
+        <div class="col-12">
+          <label>희망 직종(다중 선택) *</label>
+          <div class="cascader" id="jobCategory">
+            <div class="pane" data-pane="macro"></div>
+            <div class="pane" data-pane="micro"></div>
+          </div>
+          <div class="selected-bar" id="jobCategorySelected"></div>
+          <form:errors path="jobCodesCsv" cssClass="error"/>
+        </div>
+
+        <!-- ✅ 근무 지역 -->
+        <div class="col-12">
+          <label>근무지역(다중 선택) *</label>
+          <div class="cascader" id="workRegion">
+            <div class="pane" data-pane="macro"></div>
+            <div class="pane" data-pane="micro"></div>
+          </div>
+          <div class="selected-bar" id="workRegionSelected"></div>
+          <form:errors path="workRegionCodesCsv" cssClass="error"/>
+        </div>
+
+        <!-- 희망 연봉 -->
+        <div class="col-6">
+          <label for="minSalary">희망 연봉 하한(만원)</label>
+          <form:input path="minSalary" id="minSalary" type="number" min="0" step="100" placeholder="예) 3000"/>
+          <form:errors path="minSalary" cssClass="error"/>
+        </div>
+
+      </div>
+
+      <!-- 글로벌 에러 -->
+      <form:errors path="" cssClass="error"/>
+
+      <div class="actions">
+        <button type="button" class="btn btn-secondary" onclick="history.back()">돌아가기</button>
+        <button class="btn" type="submit">회원가입 완료</button>
+      </div>
+    </form:form>
+  </div>
+</div>
 <script>
-  // 공통 카스케이더 함수 (동일)
-  function createCascader(rootId, dataMap, multiple = true, fieldName = "codes") {
+  let JOB_CATEGORY, REGION_CATEGORY;
+  try {
+    JOB_CATEGORY = JSON.parse('<c:out value="${occJson}" escapeXml="false"/>');
+  } catch (e) { JOB_CATEGORY = {}; }
+
+  try {
+    REGION_CATEGORY = JSON.parse('<c:out value="${regJson}" escapeXml="false"/>');
+  } catch (e) { REGION_CATEGORY = {}; }
+
+  // ✅ 3단계용 (직종)
+  function createCascader3(rootId, dataMap, multiple = true, fieldName = "codes") {
     const root = document.getElementById(rootId);
-    const macroPane = root.querySelector('[data-pane="macro"]');
-    const microPane = root.querySelector('[data-pane="micro"]');
+    root.innerHTML = `
+      <div class="pane" data-level="1"></div>
+      <div class="pane" data-level="2"></div>
+      <div class="pane" data-level="3"></div>
+    `;
+    const [pane1, pane2, pane3] = root.querySelectorAll(".pane");
     const selectedBar = document.getElementById(rootId + "Selected");
     const selected = new Map();
 
-    const keys = Object.keys(dataMap);
+    const depth1List = Object.keys(dataMap);
 
-    function renderMacro(activeKey) {
-      macroPane.innerHTML = '';
-      keys.forEach(k => {
-        const div = document.createElement('div');
-        div.className = 'item' + (k === activeKey ? ' active' : '');
-        div.textContent = k;
-        div.addEventListener('click', () => {
-          renderMacro(k);
-          renderMicro(k);
-        });
-        macroPane.appendChild(div);
+    function renderDepth1(active) {
+      pane1.innerHTML = "";
+      depth1List.forEach(d1 => {
+        const div = document.createElement("div");
+        div.className = "item" + (d1 === active ? " active" : "");
+        div.textContent = d1;
+        div.onclick = () => { renderDepth1(d1); renderDepth2(d1); };
+        pane1.appendChild(div);
       });
     }
 
-    function renderMicro(mKey) {
-      microPane.innerHTML = '';
-      dataMap[mKey].forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'item';
+    function renderDepth2(d1) {
+      pane2.innerHTML = "";
+      const mids = Object.keys(dataMap[d1]);
+      mids.forEach(d2 => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.textContent = d2;
+        div.onclick = () => renderDepth3(d1, d2);
+        pane2.appendChild(div);
+      });
+    }
+
+    function renderDepth3(d1, d2) {
+      pane3.innerHTML = "";
+      dataMap[d1][d2].forEach(item => {
+        const div = document.createElement("div");
+        div.className = "item";
         div.textContent = item.name;
-        div.addEventListener('click', () => {
-          if (multiple) {
-            if (selected.has(item.code)) {
-              selected.delete(item.code);
-            } else {
-              selected.set(item.code, item.name);
-            }
-          } else {
-            selected.clear();
-            selected.set(item.code, item.name);
-          }
+        div.onclick = () => {
+          if (selected.has(item.code)) selected.delete(item.code);
+          else selected.set(item.code, item.name);
           syncSelected();
-        });
-        microPane.appendChild(div);
+        };
+        pane3.appendChild(div);
       });
     }
 
     function syncSelected() {
-      selectedBar.innerHTML = '';
-      [...selectedBar.parentElement.querySelectorAll('input[type="hidden"]')].forEach(h => h.remove());
+      selectedBar.innerHTML = "";
       selected.forEach((name, code) => {
-        const tag = document.createElement('div');
-        tag.className = 'tag';
-        const span = document.createElement('span');
-        span.textContent = name;
-        const btn = document.createElement('button');
-        btn.textContent = '✕';
-        btn.addEventListener('click', () => {
+        const tag = document.createElement("div");
+        tag.className = "tag";
+        tag.innerHTML = `${name} <button>✕</button>`;
+        tag.querySelector("button").onclick = () => {
           selected.delete(code);
           syncSelected();
-        });
-        tag.appendChild(span);
-        tag.appendChild(btn);
+        };
         selectedBar.appendChild(tag);
-
-        const hidden = document.createElement('input');
-        hidden.type = 'hidden';
-        hidden.name = fieldName;
-        hidden.value = code;
-        selectedBar.parentElement.appendChild(hidden);
       });
     }
 
-    renderMacro(keys[0]);
-    renderMicro(keys[0]);
-    syncSelected();
+    if (depth1List.length > 0) {
+      renderDepth1(depth1List[0]);
+      renderDepth2(depth1List[0]);
+    }
   }
 
-  // 직종 데이터는 하드코딩
-  const JOB_CATEGORY = {
-    "기획·전략": [
-      {code:"JOB101", name:"경영·비즈니스 기획"},
-      {code:"JOB102", name:"전략·사업기획"},
-      {code:"JOB103", name:"마케팅기획"},
-      {code:"JOB104", name:"PM/PO"},
-      {code:"JOB105", name:"컨설턴트"}
-    ],
-    "개발·데이터": [
-      {code:"JOB501", name:"백엔드 개발자"},
-      {code:"JOB502", name:"프론트엔드 개발자"},
-      {code:"JOB503", name:"풀스택 개발자"},
-      {code:"JOB504", name:"모바일(iOS/Android)"},
-      {code:"JOB505", name:"AI/ML 엔지니어"},
-      {code:"JOB506", name:"데이터 엔지니어"},
-      {code:"JOB507", name:"데이터 사이언티스트"},
-      {code:"JOB508", name:"DevOps/인프라"},
-      {code:"JOB509", name:"보안"},
-      {code:"JOB510", name:"QA/테스트"}
-    ]
-  };
-  createCascader('jobCategory', JOB_CATEGORY, true, 'jobCodes');
+  // ✅ 2단계용 (근무지역)
+  function createCascader2(rootId, dataMap, multiple = true, fieldName = "codes") {
+    const root = document.getElementById(rootId);
+    root.innerHTML = `
+      <div class="pane" data-level="1"></div>
+      <div class="pane" data-level="2"></div>
+    `;
+    const [pane1, pane2] = root.querySelectorAll(".pane");
+    const selectedBar = document.getElementById(rootId + "Selected");
+    const selected = new Map();
 
-// 근무지역은 외부 JSON 불러오기
-fetch('<c:url value="/static/data/region.json"/>')
-  .then(res => res.json())
-  .then(data => {
-    createCascader('workRegion', data, true, 'workRegionCodes');
-  })
-  .catch(err => console.error("지역 데이터 로딩 실패:", err));
+    const depth1List = Object.keys(dataMap);
 
+    function renderDepth1(active) {
+      pane1.innerHTML = "";
+      depth1List.forEach(d1 => {
+        const div = document.createElement("div");
+        div.className = "item" + (d1 === active ? " active" : "");
+        div.textContent = d1;
+        div.onclick = () => { renderDepth1(d1); renderDepth2(d1); };
+        pane1.appendChild(div);
+      });
+    }
+
+    function renderDepth2(d1) {
+      pane2.innerHTML = "";
+      dataMap[d1].forEach(item => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.textContent = item.name;
+        div.onclick = () => {
+          if (selected.has(item.code)) selected.delete(item.code);
+          else selected.set(item.code, item.name);
+          syncSelected();
+        };
+        pane2.appendChild(div);
+      });
+    }
+
+    function syncSelected() {
+      selectedBar.innerHTML = "";
+      selected.forEach((name, code) => {
+        const tag = document.createElement("div");
+        tag.className = "tag";
+        tag.innerHTML = `${name} <button>✕</button>`;
+        tag.querySelector("button").onclick = () => {
+          selected.delete(code);
+          syncSelected();
+        };
+        selectedBar.appendChild(tag);
+      });
+    }
+
+    if (depth1List.length > 0) {
+      renderDepth1(depth1List[0]);
+      renderDepth2(depth1List[0]);
+    }
+  }
+
+  // ✅ 실행
+  if (Object.keys(JOB_CATEGORY).length > 0)
+    createCascader3("jobCategory", JOB_CATEGORY, true, "jobCodes");
+  else
+    document.querySelector('#jobCategory').innerHTML = '<div class="item">⚠️ 직종 데이터 없음</div>';
+
+  if (Object.keys(REGION_CATEGORY).length > 0)
+    createCascader2("workRegion", REGION_CATEGORY, true, "workRegionCodes");
+  else
+    document.querySelector('#workRegion').innerHTML = '<div class="item">⚠️ 지역 데이터 없음</div>';
 </script>
 
 </body>

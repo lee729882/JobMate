@@ -35,21 +35,6 @@
       VALUES (#{memberId}, #{occCodesCsv}, #{regionCodesCsv}, #{employmentType}, #{careerLevel}, #{keyword});
   </insert>
 
-
-  <!-- 특정 회원의 선호도 조회 -->
-  <select id="findByMemberId" parameterType="long" resultType="com.jobmate.domain.MemberPreference">
-    SELECT
-      ID,
-      MEMBER_ID,
-      OCC_CODES,
-      REGION_CODES,
-      EMPLOYMENT_TYPE,
-      CAREER_LEVEL,
-      KEYWORD
-    FROM MEMBER_PREFERENCE
-    WHERE MEMBER_ID = #{memberId}
-  </select>
-
   <!-- 전체 조회 -->
   <select id="findAll" resultType="com.jobmate.domain.MemberPreference">
     SELECT
