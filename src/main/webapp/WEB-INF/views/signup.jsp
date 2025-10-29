@@ -116,26 +116,34 @@
       min-height: 32px;
     }
 
-    .tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 10px;
-      margin: 4px;
-      background: #1e293b;
-      border-radius: 8px;
-      font-size: 13px;
-      color: #ffffff;
-    }
-    .tag span { color: #ffffff; }
-    .tag button {
-      all: unset;
-      cursor: pointer;
-      opacity: .75;
-      color: #ffffff;
-      font-weight: bold;
-    }
-    
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  margin: 4px;
+  background: #1e293b;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #ffffff;
+}
+
+.tag span {
+  color: #ffffff;
+}
+
+.tag button {
+  all: unset;
+  cursor: pointer;
+  opacity: .75;
+  color: #ffffff;
+  font-weight: bold;
+}
+.tag button:hover {
+  opacity: 1;
+  color: #22d3ee;
+}
+
     .error{ color:var(--error); font-size:12px; margin-top:6px; }
     
     
@@ -315,18 +323,27 @@
     }
 
     function syncSelected() {
-      selectedBar.innerHTML = "";
-      selected.forEach((name, code) => {
-        const tag = document.createElement("div");
-        tag.className = "tag";
-        tag.innerHTML = `${name} <button>✕</button>`;
-        tag.querySelector("button").onclick = () => {
-          selected.delete(code);
-          syncSelected();
-        };
-        selectedBar.appendChild(tag);
-      });
-    }
+    	  selectedBar.innerHTML = "";
+    	  selected.forEach((name, code) => {
+    	    const tag = document.createElement("div");
+    	    tag.className = "tag";
+
+    	    const span = document.createElement("span");
+    	    span.textContent = name; // ✅ 안전하게 텍스트 삽입 (HTML 파싱 X)
+
+    	    const btn = document.createElement("button");
+    	    btn.textContent = "✕";
+    	    btn.onclick = () => {
+    	      selected.delete(code);
+    	      syncSelected();
+    	    };
+
+    	    tag.appendChild(span);
+    	    tag.appendChild(btn);
+    	    selectedBar.appendChild(tag);
+    	  });
+    	}
+
 
     if (depth1List.length > 0) {
       renderDepth1(depth1List[0]);
@@ -374,18 +391,26 @@
     }
 
     function syncSelected() {
-      selectedBar.innerHTML = "";
-      selected.forEach((name, code) => {
-        const tag = document.createElement("div");
-        tag.className = "tag";
-        tag.innerHTML = `${name} <button>✕</button>`;
-        tag.querySelector("button").onclick = () => {
-          selected.delete(code);
-          syncSelected();
-        };
-        selectedBar.appendChild(tag);
-      });
-    }
+    	  selectedBar.innerHTML = "";
+    	  selected.forEach((name, code) => {
+    	    const tag = document.createElement("div");
+    	    tag.className = "tag";
+
+    	    const span = document.createElement("span");
+    	    span.textContent = name; // ✅ 안전하게 텍스트 삽입 (HTML 파싱 X)
+
+    	    const btn = document.createElement("button");
+    	    btn.textContent = "✕";
+    	    btn.onclick = () => {
+    	      selected.delete(code);
+    	      syncSelected();
+    	    };
+
+    	    tag.appendChild(span);
+    	    tag.appendChild(btn);
+    	    selectedBar.appendChild(tag);
+    	  });
+    	}
 
     if (depth1List.length > 0) {
       renderDepth1(depth1List[0]);
