@@ -154,15 +154,30 @@
       color:#94a3b8;
       font-size:13px;
     }
+    .logo {
+  font-size:22px;
+  font-weight:800;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  text-decoration:none;
+}
+
+.logo:hover {
+  opacity:0.8;
+  transition:0.2s;
+}
+    
   </style>
 </head>
 
 <body>
 <header>
-  <div class="logo">
+  <a href="${pageContext.request.contextPath}/member/dashboard" class="logo">
     <div class="mark"></div>
     JobMate
-  </div>
+  </a>
 
   <div class="user-info">
     <div>

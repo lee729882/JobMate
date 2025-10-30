@@ -15,4 +15,7 @@ public class EmploymentResponse {
     private String empWantedTypeNm;
     private String regLogImgNm;
     private String empWantedHomepgDetail;
+    private String empWantedCareerNm;
+
+    
 }

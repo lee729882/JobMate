@@ -48,7 +48,7 @@
     }
 
     .detail-card {
-      width:min(100%, 900px);
+      width:min(100%, 950px);
       background:var(--card);
       border:1px solid var(--line);
       border-radius:18px;
@@ -63,6 +63,11 @@
       text-shadow:0 0 12px #22d3ee55;
     }
 
+    h3 {
+      margin-top:25px; color:#a5b4fc; font-size:18px;
+      border-left:4px solid var(--accent); padding-left:10px;
+    }
+
     .info {
       margin-bottom:10px; line-height:1.6; font-size:15px; color:#cbd5e1;
     }
@@ -71,6 +76,14 @@
 
     a { color:#22d3ee; text-decoration:none; }
     a:hover { text-decoration:underline; }
+
+    hr {
+      border:0; border-top:1px solid #334155; margin:25px 0;
+    }
+
+    ul {
+      list-style:disc; margin:10px 0 20px 30px; color:#cbd5e1;
+    }
 
     .back-btn {
       display:inline-block;
@@ -95,15 +108,77 @@
       font-size:13px;
     }
   </style>
+  <style>
+  h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #a5b4fc;
+    margin-top: 40px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .selection-steps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 10px;
+  }
+
+  .step-card {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    padding: 12px 18px;
+    min-width: 130px;
+    color: #e2e8f0;
+    font-size: 14px;
+    text-align: center;
+    transition: 0.3s;
+  }
+
+  .step-card:hover {
+    background: rgba(59,130,246,0.25);
+    transform: translateY(-3px);
+  }
+
+  .step-name {
+    font-weight: 600;
+    color: #93c5fd;
+  }
+
+  .step-date {
+    margin-top: 5px;
+    font-size: 13px;
+    color: #cbd5e1;
+  }
+  .logo {
+  font-size:22px;
+  font-weight:800;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  text-decoration:none;
+}
+
+.logo:hover {
+  opacity:0.8;
+  transition:0.2s;
+}
+  
+</style>
+  
 </head>
 
 <body>
 <header>
-  <div class="logo">
+  <a href="${pageContext.request.contextPath}/member/dashboard" class="logo">
     <div class="mark"></div>
     JobMate
-  </div>
-
+  </a>
   <div class="user-info">
     <div>
       <strong><c:out value="${loginMember.name}"/></strong>
@@ -121,18 +196,79 @@
 <main>
   <div class="detail-card">
     <h1>${job.empWantedTitle}</h1>
+
+    <c:if test="${not empty job.regLogImgNm}">
+      <img src="${job.regLogImgNm}" alt="기업 로고" style="max-height:70px; margin-bottom:20px;">
+    </c:if>
+
+    <!-- 기본정보 -->
     <div class="info"><b>기업명:</b> ${job.empBusiNm} (${job.coClcdNm})</div>
     <div class="info"><b>고용형태:</b> ${job.empWantedTypeNm}</div>
     <div class="info"><b>근무지역:</b> ${job.workRegionNm}</div>
-    <div class="info"><b>경력:</b> ${job.empWantedCareerNm}</div>
-    <div class="info"><b>학력:</b> ${job.empWantedEduNm}</div>
+    <div class="info"><b>경력:</b> ${empty job.empWantedCareerNm ? '별도 명시 없음' : job.empWantedCareerNm}</div>
+    <div class="info"><b>학력:</b> ${empty job.empWantedEduNm ? '별도 명시 없음' : job.empWantedEduNm}</div>
     <div class="info"><b>모집기간:</b> ${job.empWantedStdt} ~ ${job.empWantedEndt}</div>
-    <div class="info"><b>제출서류:</b> ${job.empSubmitDocCont}</div>
-    <div class="info"><b>접수방법:</b> ${job.empRcptMthdCont}</div>
-    <div class="info"><b>합격자 발표:</b> ${job.empAcptPsnAnncCont}</div>
-    <div class="info"><b>채용 홈페이지:</b> 
-      <a href="${job.empWantedHomepgDetail}" target="_blank">${job.empWantedHomepgDetail}</a>
-    </div>
+
+    <hr>
+
+    <!-- 모집분야 -->
+    <h3>📋 모집분야</h3>
+    <div class="info"><b>모집직무:</b> ${job.empRecrNm}</div>
+    <div class="info"><b>직무내용:</b> ${job.jobCont}</div>
+    <div class="info"><b>필요자격/우대:</b> ${job.sptCertEtc}</div>
+    <div class="info"><b>모집인원:</b> ${job.recrPsncnt}</div>
+
+    <hr>
+
+<!-- 전형절차 -->
+<h3>🕐 채용 절차</h3>
+<c:if test="${not empty job.selectionList}">
+  <div class="selection-steps">
+    <c:forEach var="s" items="${job.selectionList}">
+      <c:if test="${not empty s.selsNm}">
+        <div class="step-card">
+          <div class="step-name">${s.selsNm}</div>
+          <c:if test="${not empty s.selsSchdCont}">
+            <div class="step-date">${s.selsSchdCont}</div>
+          </c:if>
+        </div>
+      </c:if>
+    </c:forEach>
+  </div>
+</c:if>
+<c:if test="${empty job.selectionList}">
+  <p>전형 절차 정보가 등록되어 있지 않습니다.</p>
+</c:if>
+
+
+
+    <hr>
+
+    <!-- 제출서류 / 접수방법 -->
+    <h3>📎 제출서류</h3>
+    <p>${empty job.empSubmitDocCont ? '공고문 참고' : job.empSubmitDocCont}</p>
+
+    <h3>📝 접수방법</h3>
+    <p>${empty job.empRcptMthdCont ? '공고문 참고' : job.empRcptMthdCont}</p>
+
+    <h3>📅 합격자 발표</h3>
+    <p>${empty job.empAcptPsnAnncCont ? '별도 공지 예정' : job.empAcptPsnAnncCont}</p>
+
+    <hr>
+
+    <!-- 기타 / 공통사항 -->
+    <h3>💬 공통사항</h3>
+    <p>${job.recrCommCont}</p>
+
+    <h3>📞 문의사항</h3>
+    <p>${job.inqryCont}</p>
+
+    <h3>📦 기타사항</h3>
+    <p>${job.empnEtcCont}</p>
+
+    <h3>🔗 채용 홈페이지</h3>
+    <a href="${job.empWantedHomepgDetail}" target="_blank">${job.empWantedHomepgDetail}</a>
+
     <a href="${pageContext.request.contextPath}/member/employment/list" class="back-btn">← 목록으로 돌아가기</a>
   </div>
 </main>
