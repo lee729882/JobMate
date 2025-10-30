@@ -64,38 +64,37 @@ public class ExcelCodeMapper {
             Sheet sheet = workbook.getSheetAt(0);
             DataFormatter fmt = new DataFormatter();
 
-            String currentDepth1 = ""; // 대분류
-            String currentDepth2 = ""; // 중분류
+            String currentDepth1 = "";
+            String currentDepth2 = "";
 
             for (Row row : sheet) {
                 if (row == null) continue;
 
                 String code   = fmt.formatCellValue(row.getCell(0)).trim(); // 코드
-                String depth1 = fmt.formatCellValue(row.getCell(1)).trim(); // 1_depth
-                String depth2 = fmt.formatCellValue(row.getCell(2)).trim(); // 2_depth
-                String depth3 = fmt.formatCellValue(row.getCell(3)).trim(); // 3_depth
+                String depth1 = fmt.formatCellValue(row.getCell(1)).trim(); // 대분류
+                String depth2 = fmt.formatCellValue(row.getCell(2)).trim(); // 중분류
+                String depth3 = fmt.formatCellValue(row.getCell(3)).trim(); // 소분류
 
-                // ✅ 숫자만 있는 depth1 행 (예: 12, 13 등) 무시
+                // 숫자만 있는 1depth 행 무시
                 if (depth1.matches("^\\d+$")) continue;
 
-                // ✅ 새로운 대분류 시작
+                // 대분류 갱신
                 if (!depth1.isEmpty()) {
                     currentDepth1 = depth1;
                     grouped.putIfAbsent(currentDepth1, new LinkedHashMap<>());
                 }
 
-                // ✅ 중분류 갱신
+                // 중분류 갱신
                 if (!depth2.isEmpty()) {
                     currentDepth2 = depth2;
                     grouped.get(currentDepth1).putIfAbsent(currentDepth2, new ArrayList<>());
                 }
 
-                // ✅ 소분류(3depth) 추가
-                if (!depth3.isEmpty() && !code.isEmpty() && !currentDepth1.isEmpty() && !currentDepth2.isEmpty()) {
-                    Map<String, String> item = new LinkedHashMap<>();
-                    item.put("code", code);
-                    item.put("name", depth3);
-                    grouped.get(currentDepth1).get(currentDepth2).add(item);
+                // 소분류 추가
+                if (!depth3.isEmpty() && !code.isEmpty()) {
+                    grouped.get(currentDepth1)
+                            .get(currentDepth2)
+                            .add(Map.of("code", code, "name", depth3));
                 }
             }
 
@@ -107,6 +106,7 @@ public class ExcelCodeMapper {
 
         return grouped;
     }
+
 
 
     // ✅ 새로 추가: 3단계 직종 (대분류 → 중분류 → 소분류)

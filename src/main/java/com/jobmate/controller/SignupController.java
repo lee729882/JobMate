@@ -100,7 +100,7 @@ public class SignupController {
             pref.setCareerLevel(member.getCareerLevel());
             pref.setKeyword(member.getKeyword());
 
-            preferenceService.save(pref);
+            preferenceService.savePreference(pref);
 
             // 4️⃣ 성공 페이지로 이동
             ra.addAttribute("username", member.getUsername());

@@ -1,7 +1,6 @@
 package com.jobmate.dto;
 
 import org.hibernate.validator.constraints.NotBlank;
-import java.util.Arrays;
 import java.util.List;
 
 public class MemberDto {
@@ -33,13 +32,9 @@ public class MemberDto {
     private String careerLevel;
     private String keyword;
 
-    /** ✅ CSV 변환 메서드 (DB 저장용) */
-    public String getJobCodesCsv() {
-        return (jobCodes == null || jobCodes.isEmpty()) ? null : String.join(",", jobCodes);
-    }
-    public String getWorkRegionCodesCsv() {
-        return (workRegionCodes == null || workRegionCodes.isEmpty()) ? null : String.join(",", workRegionCodes);
-    }
+    /** ✅ JSP hidden input으로 들어오는 CSV 값 (직접 form에서 전달됨) */
+    private String jobCodesCsv;
+    private String workRegionCodesCsv;
 
     // ===== Getter / Setter =====
     public String getUsername() { return username; }
@@ -78,6 +73,25 @@ public class MemberDto {
     public String getKeyword() { return keyword; }
     public void setKeyword(String keyword) { this.keyword = keyword; }
 
+    // ✅ CSV 변환 및 폼 입력값 병합 로직
+    public String getJobCodesCsv() {
+        if (jobCodesCsv != null && !jobCodesCsv.isEmpty()) return jobCodesCsv;
+        return (jobCodes == null || jobCodes.isEmpty()) ? null : String.join(",", jobCodes);
+    }
+
+    public void setJobCodesCsv(String jobCodesCsv) {
+        this.jobCodesCsv = jobCodesCsv;
+    }
+
+    public String getWorkRegionCodesCsv() {
+        if (workRegionCodesCsv != null && !workRegionCodesCsv.isEmpty()) return workRegionCodesCsv;
+        return (workRegionCodes == null || workRegionCodes.isEmpty()) ? null : String.join(",", workRegionCodes);
+    }
+
+    public void setWorkRegionCodesCsv(String workRegionCodesCsv) {
+        this.workRegionCodesCsv = workRegionCodesCsv;
+    }
+
     @Override
     public String toString() {
         return "MemberDto{" +
@@ -87,8 +101,8 @@ public class MemberDto {
                 ", careerType='" + careerType + '\'' +
                 ", eduCode='" + eduCode + '\'' +
                 ", minSalary=" + minSalary +
-                ", jobCodes=" + jobCodes +
-                ", workRegionCodes=" + workRegionCodes +
+                ", jobCodesCsv='" + jobCodesCsv + '\'' +
+                ", workRegionCodesCsv='" + workRegionCodesCsv + '\'' +
                 '}';
     }
 }

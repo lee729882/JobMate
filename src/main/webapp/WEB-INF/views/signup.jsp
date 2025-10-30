@@ -219,27 +219,36 @@
           <form:errors path="eduCode" cssClass="error"/>
         </div>
 
-        <!-- ✅ 희망 직종 -->
-        <div class="col-12">
-          <label>희망 직종(다중 선택) *</label>
-          <div class="cascader" id="jobCategory">
-            <div class="pane" data-pane="macro"></div>
-            <div class="pane" data-pane="micro"></div>
-          </div>
-          <div class="selected-bar" id="jobCategorySelected"></div>
-          <form:errors path="jobCodesCsv" cssClass="error"/>
-        </div>
+<!-- ✅ 희망 직종 -->
+<div class="col-12">
+  <label>희망 직종(다중 선택) *</label>
+  <div class="cascader" id="jobCategory">
+    <div class="pane" data-pane="macro"></div>
+    <div class="pane" data-pane="micro"></div>
+  </div>
+  <div class="selected-bar" id="jobCategorySelected"></div>
 
-        <!-- ✅ 근무 지역 -->
-        <div class="col-12">
-          <label>근무지역(다중 선택) *</label>
-          <div class="cascader" id="workRegion">
-            <div class="pane" data-pane="macro"></div>
-            <div class="pane" data-pane="micro"></div>
-          </div>
-          <div class="selected-bar" id="workRegionSelected"></div>
-          <form:errors path="workRegionCodesCsv" cssClass="error"/>
-        </div>
+  <!-- ✅ 서버로 전송될 hidden input -->
+  <input type="hidden" id="jobCodesCsv" name="jobCodesCsv"/>
+
+  <form:errors path="jobCodesCsv" cssClass="error"/>
+</div>
+
+<!-- ✅ 근무 지역 -->
+<div class="col-12">
+  <label>근무지역(다중 선택) *</label>
+  <div class="cascader" id="workRegion">
+    <div class="pane" data-pane="macro"></div>
+    <div class="pane" data-pane="micro"></div>
+  </div>
+  <div class="selected-bar" id="workRegionSelected"></div>
+
+  <!-- ✅ 서버로 전송될 hidden input -->
+  <input type="hidden" id="workRegionCodesCsv" name="workRegionCodesCsv"/>
+
+  <form:errors path="workRegionCodesCsv" cssClass="error"/>
+</div>
+
 
         <!-- 희망 연봉 -->
         <div class="col-6">
@@ -260,6 +269,7 @@
     </form:form>
   </div>
 </div>
+
 <script>
   let JOB_CATEGORY, REGION_CATEGORY;
   try {
@@ -322,27 +332,38 @@
       });
     }
 
-    function syncSelected() {
-    	  selectedBar.innerHTML = "";
-    	  selected.forEach((name, code) => {
-    	    const tag = document.createElement("div");
-    	    tag.className = "tag";
+// ✅ 선택된 코드 hidden input에 반영 (직종용)
+function syncSelected() {
+  selectedBar.innerHTML = "";
+  const codes = [];
+  selected.forEach((name, code) => {
+    const tag = document.createElement("div");
+    tag.className = "tag";
 
-    	    const span = document.createElement("span");
-    	    span.textContent = name; // ✅ 안전하게 텍스트 삽입 (HTML 파싱 X)
+    const span = document.createElement("span");
+    span.textContent = name;
 
-    	    const btn = document.createElement("button");
-    	    btn.textContent = "✕";
-    	    btn.onclick = () => {
-    	      selected.delete(code);
-    	      syncSelected();
-    	    };
+    const btn = document.createElement("button");
+    btn.textContent = "✕";
+    btn.onclick = () => {
+      selected.delete(code);
+      syncSelected();
+    };
 
-    	    tag.appendChild(span);
-    	    tag.appendChild(btn);
-    	    selectedBar.appendChild(tag);
-    	  });
-    	}
+    tag.appendChild(span);
+    tag.appendChild(btn);
+    selectedBar.appendChild(tag);
+    codes.push(code);
+  });
+
+  // ✅ hidden input 업데이트 (직종용)
+  const hiddenInput = document.getElementById("jobCodesCsv");
+  if (hiddenInput) {
+    hiddenInput.value = codes.join(",");
+    console.log("[DEBUG] jobCodesCsv updated:", hiddenInput.value);
+  }
+}
+
 
 
     if (depth1List.length > 0) {
@@ -352,71 +373,78 @@
   }
 
   // ✅ 2단계용 (근무지역)
-  function createCascader2(rootId, dataMap, multiple = true, fieldName = "codes") {
-    const root = document.getElementById(rootId);
-    root.innerHTML = `
-      <div class="pane" data-level="1"></div>
-      <div class="pane" data-level="2"></div>
-    `;
-    const [pane1, pane2] = root.querySelectorAll(".pane");
-    const selectedBar = document.getElementById(rootId + "Selected");
-    const selected = new Map();
+function createCascader2(rootId, dataMap, multiple = true, fieldName = "codes") {
+  const root = document.getElementById(rootId);
+  root.innerHTML = `
+    <div class="pane" data-level="1"></div>
+    <div class="pane" data-level="2"></div>
+  `;
+  const [pane1, pane2] = root.querySelectorAll(".pane");
+  const selectedBar = document.getElementById(rootId + "Selected");
+  const selected = new Map();
 
-    const depth1List = Object.keys(dataMap);
+  const depth1List = Object.keys(dataMap);
 
-    function renderDepth1(active) {
-      pane1.innerHTML = "";
-      depth1List.forEach(d1 => {
-        const div = document.createElement("div");
-        div.className = "item" + (d1 === active ? " active" : "");
-        div.textContent = d1;
-        div.onclick = () => { renderDepth1(d1); renderDepth2(d1); };
-        pane1.appendChild(div);
-      });
-    }
-
-    function renderDepth2(d1) {
-      pane2.innerHTML = "";
-      dataMap[d1].forEach(item => {
-        const div = document.createElement("div");
-        div.className = "item";
-        div.textContent = item.name;
-        div.onclick = () => {
-          if (selected.has(item.code)) selected.delete(item.code);
-          else selected.set(item.code, item.name);
-          syncSelected();
-        };
-        pane2.appendChild(div);
-      });
-    }
-
-    function syncSelected() {
-    	  selectedBar.innerHTML = "";
-    	  selected.forEach((name, code) => {
-    	    const tag = document.createElement("div");
-    	    tag.className = "tag";
-
-    	    const span = document.createElement("span");
-    	    span.textContent = name; // ✅ 안전하게 텍스트 삽입 (HTML 파싱 X)
-
-    	    const btn = document.createElement("button");
-    	    btn.textContent = "✕";
-    	    btn.onclick = () => {
-    	      selected.delete(code);
-    	      syncSelected();
-    	    };
-
-    	    tag.appendChild(span);
-    	    tag.appendChild(btn);
-    	    selectedBar.appendChild(tag);
-    	  });
-    	}
-
-    if (depth1List.length > 0) {
-      renderDepth1(depth1List[0]);
-      renderDepth2(depth1List[0]);
-    }
+  function renderDepth1(active) {
+    pane1.innerHTML = "";
+    depth1List.forEach(d1 => {
+      const div = document.createElement("div");
+      div.className = "item" + (d1 === active ? " active" : "");
+      div.textContent = d1;
+      div.onclick = () => { renderDepth1(d1); renderDepth2(d1); };
+      pane1.appendChild(div);
+    });
   }
+
+  function renderDepth2(d1) {
+    pane2.innerHTML = "";
+    dataMap[d1].forEach(item => {
+      const div = document.createElement("div");
+      div.className = "item";
+      div.textContent = item.name;
+      div.onclick = () => {
+        if (selected.has(item.code)) selected.delete(item.code);
+        else selected.set(item.code, item.name);
+        syncSelected();
+      };
+      pane2.appendChild(div);
+    });
+  }
+
+  // ✅ 근무지역 hidden input 업데이트 추가
+  function syncSelected() {
+    selectedBar.innerHTML = "";
+    const codes = [];
+    selected.forEach((name, code) => {
+      const tag = document.createElement("div");
+      tag.className = "tag";
+
+      const span = document.createElement("span");
+      span.textContent = name;
+
+      const btn = document.createElement("button");
+      btn.textContent = "✕";
+      btn.onclick = () => {
+        selected.delete(code);
+        syncSelected();
+      };
+
+      tag.appendChild(span);
+      tag.appendChild(btn);
+      selectedBar.appendChild(tag);
+      codes.push(code);
+    });
+
+    const hiddenInput = document.getElementById("workRegionCodesCsv");
+    if (hiddenInput) hiddenInput.value = codes.join(",");
+  }
+
+  if (depth1List.length > 0) {
+    renderDepth1(depth1List[0]);
+    renderDepth2(depth1List[0]);
+  }
+}
+
 
   // ✅ 실행
   if (Object.keys(JOB_CATEGORY).length > 0)
@@ -429,6 +457,6 @@
   else
     document.querySelector('#workRegion').innerHTML = '<div class="item">⚠️ 지역 데이터 없음</div>';
 </script>
-
 </body>
 </html>
+

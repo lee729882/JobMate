@@ -19,38 +19,41 @@ public class MemberService {
 
     @Autowired
     private MemberMapper memberMapper;
+
+    @Autowired
+    private MemberPreferenceService memberPreferenceService;
+
     private String toCsv(List<String> values) {
         if (values == null || values.isEmpty()) return null;
         return String.join(",", values);
     }
 
-
     public void register(MemberDto dto) {
-    	
-        // 아이디 중복 체크
+
+        // 중복 검사
         if (memberMapper.existsByUsername(dto.getUsername()) > 0) {
             throw new DuplicateUsernameException("이미 사용 중인 아이디입니다.");
         }
-
-        // 이메일 중복 체크
         if (memberMapper.existsByEmail(dto.getEmail()) > 0) {
             throw new DuplicateEmailException("이미 사용 중인 이메일입니다.");
         }
-        
+
+        // ✅ 1. MEMBER 저장
         Member member = new Member();
         member.setUsername(dto.getUsername());
-        member.setPassword(dto.getPassword()); // 실제 운영 시 반드시 BCrypt 등으로 해시 권장
+        member.setPassword(dto.getPassword());
         member.setEmail(dto.getEmail());
         member.setName(dto.getName());
         member.setCareerType(dto.getCareerType());
         member.setEduCode(dto.getEduCode());
         member.setMinSalary(dto.getMinSalary());
-
-        // String[] -> CSV
         member.setJobCodes(toCsv(dto.getJobCodes()));
         member.setWorkRegionCodes(toCsv(dto.getWorkRegionCodes()));
 
         memberMapper.insertMember(member);
+
+        // ✅ 2. MEMBER_PREFERENCE 저장
+        memberPreferenceService.savePreference(dto, member.getId());
     }
 
     private String toCsv(String[] arr) {

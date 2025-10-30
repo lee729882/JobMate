@@ -19,21 +19,30 @@
   </select>
 
   <!-- MERGE (INSERT or UPDATE) -->
-  <insert id="upsert" parameterType="com.jobmate.domain.MemberPreference">
-    MERGE INTO MEMBER_PREFERENCE target
-    USING (SELECT #{memberId, jdbcType=NUMERIC} AS MEMBER_ID FROM DUAL) src
-    ON (target.MEMBER_ID = src.MEMBER_ID)
-    WHEN MATCHED THEN
-      UPDATE SET
-        OCC_CODES = #{occCodesCsv, jdbcType=VARCHAR},
-        REGION_CODES = #{regionCodesCsv, jdbcType=VARCHAR},
-        EMPLOYMENT_TYPE = #{employmentType, jdbcType=VARCHAR},
-        CAREER_LEVEL = #{careerLevel, jdbcType=VARCHAR},
-        KEYWORD = #{keyword, jdbcType=VARCHAR}
-    WHEN NOT MATCHED THEN
-      INSERT (MEMBER_ID, OCC_CODES, REGION_CODES, EMPLOYMENT_TYPE, CAREER_LEVEL, KEYWORD)
-      VALUES (#{memberId}, #{occCodesCsv}, #{regionCodesCsv}, #{employmentType}, #{careerLevel}, #{keyword});
-  </insert>
+<insert id="upsert" parameterType="com.jobmate.domain.MemberPreference">
+  MERGE INTO MEMBER_PREFERENCE target
+  USING (SELECT #{memberId, jdbcType=NUMERIC} AS MEMBER_ID FROM DUAL) src
+  ON (target.MEMBER_ID = src.MEMBER_ID)
+  WHEN MATCHED THEN
+    UPDATE SET
+      OCC_CODES = #{occCodesCsv, jdbcType=VARCHAR},
+      REGION_CODES = #{regionCodesCsv, jdbcType=VARCHAR},
+      EMPLOYMENT_TYPE = #{employmentType, jdbcType=VARCHAR},
+      CAREER_LEVEL = #{careerLevel, jdbcType=VARCHAR},
+      KEYWORD = #{keyword, jdbcType=VARCHAR}
+  WHEN NOT MATCHED THEN
+    INSERT (MEMBER_ID, OCC_CODES, REGION_CODES, EMPLOYMENT_TYPE, CAREER_LEVEL, KEYWORD)
+    VALUES (
+      #{memberId, jdbcType=NUMERIC},
+      #{occCodesCsv, jdbcType=VARCHAR},
+      #{regionCodesCsv, jdbcType=VARCHAR},
+      #{employmentType, jdbcType=VARCHAR},
+      #{careerLevel, jdbcType=VARCHAR},
+      #{keyword, jdbcType=VARCHAR}
+    )
+</insert>
+
+
 
   <!-- 전체 조회 -->
   <select id="findAll" resultType="com.jobmate.domain.MemberPreference">

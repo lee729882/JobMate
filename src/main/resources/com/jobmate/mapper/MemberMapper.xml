@@ -20,23 +20,30 @@
   </select>
   
 <insert id="insertMember" parameterType="com.jobmate.domain.Member">
-  INSERT INTO MEMBER (
-    USERNAME, PASSWORD, EMAIL, NAME,
-    CAREER_TYPE, EDU_CODE, MIN_SALARY,
-    JOB_CODES, WORK_REGION_CODES
-  )
-  VALUES (
-    #{username, jdbcType=VARCHAR},
-    #{password, jdbcType=VARCHAR},
-    #{email, jdbcType=VARCHAR},
-    #{name, jdbcType=VARCHAR},
-    #{careerType, jdbcType=VARCHAR},
-    #{eduCode, jdbcType=VARCHAR},
-    #{minSalary, jdbcType=NUMERIC},
-    #{jobCodes, jdbcType=VARCHAR},
-    #{workRegionCodes, jdbcType=VARCHAR}
-  )
+    <selectKey keyProperty="id" resultType="long" order="AFTER">
+        SELECT ID FROM MEMBER WHERE ROWID = (SELECT MAX(ROWID) FROM MEMBER)
+    </selectKey>
+
+    INSERT INTO MEMBER (
+        USERNAME, PASSWORD, EMAIL, NAME,
+        CAREER_TYPE, EDU_CODE, MIN_SALARY,
+        JOB_CODES, WORK_REGION_CODES
+    ) VALUES (
+        #{username, jdbcType=VARCHAR},
+        #{password, jdbcType=VARCHAR},
+        #{email, jdbcType=VARCHAR},
+        #{name, jdbcType=VARCHAR},
+        #{careerType, jdbcType=VARCHAR},
+        #{eduCode, jdbcType=VARCHAR},
+        #{minSalary, jdbcType=NUMERIC},
+        #{jobCodes, jdbcType=VARCHAR},
+        #{workRegionCodes, jdbcType=VARCHAR}
+    )
 </insert>
+
+
+
+
 
 
 
