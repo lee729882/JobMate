@@ -16,6 +16,9 @@ public class MemberDto {
     private String careerType;
     private String region;
     private String certifications;
+    
+    private String name; 	
+
 
     // Getters & Setters
     public String getUsername() { return username; }
@@ -26,7 +29,10 @@ public class MemberDto {
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
-
+    
+    public String getName() { return name; }      // ✅ 추가
+    public void setName(String name) { this.name = name; }  // ✅ 추가
+    
     public String getPhone() { return phone; }
     public void setPhone(String phone) { this.phone = phone; }
 

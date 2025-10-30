@@ -9,6 +9,11 @@ public class Member {
     private String careerType;
     private String region;
     private String certifications;
+    private String name;
+    
+    
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
     // Getters & Setters
     public Long getId() { return id; }

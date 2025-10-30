@@ -17,15 +17,14 @@ public interface MemberMapper {
     boolean existsByEmail(String email);
 
     /** 회원 등록 */
-    @Insert("INSERT INTO MEMBER (" +
-            "USERNAME, PASSWORD, EMAIL, PHONE, CAREER_TYPE, REGION, CERTIFICATIONS" +
-            ") VALUES (" +
-            "#{username}, #{password}, #{email}, #{phone}, #{careerType}, #{region}, #{certifications}" +
-            ")")
-    void insert(Member member);
+    @Insert("INSERT INTO MEMBER (ID, USERNAME, PASSWORD, EMAIL, NAME, PHONE, CAREER_TYPE, REGION, CERTIFICATIONS) " +
+            "VALUES (MEMBER_SEQ.NEXTVAL, #{username}, #{password}, #{email}, #{name}, #{phone}, #{careerType}, #{region}, #{certifications})")
+    void insertMember(Member member);
+
 
     /** 사용자명으로 조회 */
-    @Select("SELECT ID, USERNAME, PASSWORD, EMAIL, PHONE, CAREER_TYPE, REGION, CERTIFICATIONS " +
+    @Select("SELECT ID, USERNAME, PASSWORD, EMAIL, NAME, PHONE, CAREER_TYPE, REGION, CERTIFICATIONS " +
             "FROM MEMBER WHERE USERNAME = #{username}")
     Member findByUsername(String username);
+
 }

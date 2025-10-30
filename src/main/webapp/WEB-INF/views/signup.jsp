@@ -84,6 +84,12 @@
       <form:input path="email" id="email" type="email"/>
       <form:errors path="email" cssClass="error"/>
 
+		<div class="col-6">
+		  <label for="name">이름 *</label>
+		  <form:input path="name" id="name" placeholder="홍길동"/>
+		  <form:errors path="name" cssClass="error"/>
+		</div>
+
       <label for="phone">전화번호</label>
       <form:input path="phone" id="phone" placeholder="010-1234-5678"/>
 

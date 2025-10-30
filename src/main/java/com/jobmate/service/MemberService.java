@@ -28,11 +28,13 @@ public class MemberService {
         m.setPassword(dto.getPassword());
         m.setEmail(dto.getEmail());
         m.setPhone(dto.getPhone());
+        m.setName(dto.getName());
         m.setCareerType(dto.getCareerType());
         m.setRegion(dto.getRegion());
         m.setCertifications(dto.getCertifications());
 
-        memberMapper.insert(m); // ✅ 수정된 메서드명
+        // ✅ insertMember만 호출
+        memberMapper.insertMember(m);
     }
 
     /** ✅ 아이디로 회원 조회 */
@@ -45,7 +47,6 @@ public class MemberService {
         Member found = memberMapper.findByUsername(username);
         if (found == null) return null;
 
-        // 단순 문자열 비교 (추후 암호화 적용 가능)
         if (found.getPassword().equals(password)) {
             return found;
         }

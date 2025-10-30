@@ -86,7 +86,7 @@
       font-size:13px;
     }
 
-    /* API 영역 */
+    /* API 결과 영역 */
     #apiSection {
       margin-top:40px;
       width:100%;
@@ -98,6 +98,9 @@
       color:#dbeafe;
       display:none;
     }
+
+    #apiTitle { font-size:18px; font-weight:700; margin-bottom:12px; color:#fff; }
+    #apiContent { font-size:14px; color:#cbd5e1; line-height:1.6; }
   </style>
 </head>
 
@@ -110,10 +113,12 @@
 
   <div class="user-info">
     <div>
-      <strong>${loginMember.username}</strong> 님 |
+      <strong><c:out value="${loginMember.name}"/></strong>
+      (<c:out value="${loginMember.username}"/>) 님 |
       <c:out value="${loginMember.careerType == 'EXP' ? '경력직' : '신입'}"/> |
       <c:out value="${loginMember.phone}"/>
     </div>
+
     <form action="${pageContext.request.contextPath}/member/logout" method="post">
       <button type="submit" class="logout-btn">로그아웃</button>
     </form>
@@ -137,4 +142,42 @@
       </div>
     </div>
 
-    <
+    <!-- ✅ API 데이터 출력 영역 -->
+    <div id="apiSection">
+      <div id="apiTitle">API 결과</div>
+      <div id="apiContent">여기에 선택한 API의 데이터가 표시됩니다.</div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  © 2025 JobMate. All rights reserved.
+</footer>
+
+<script>
+  function loadApi(type) {
+    const section = document.getElementById("apiSection");
+    const title = document.getElementById("apiTitle");
+    const content = document.getElementById("apiContent");
+    
+    title.textContent = type + " API 결과";
+    section.style.display = "block";
+    
+    // ⚙️ 추후 실제 API 연동
+    switch(type){
+      case '공채':
+        content.innerHTML = "고용24 또는 워크넷 API 연동 예정입니다.<br>공채 일정과 채용공고를 표시합니다.";
+        break;
+      case '사람인':
+        content.innerHTML = "사람인 오픈 API 데이터를 기반으로 채용 정보를 불러올 예정입니다.";
+        break;
+      case '잡코리아':
+        content.innerHTML = "잡코리아 API 연동으로 최신 채용 공고를 보여줄 예정입니다.";
+        break;
+    }
+    section.scrollIntoView({ behavior: "smooth" });
+  }
+</script>
+</body>
+</html>
+	
