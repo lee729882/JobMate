@@ -1,18 +1,12 @@
 package com.jobmate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import com.jobmate.domain.Member;
-import org.springframework.util.StringUtils;
-
 import com.jobmate.domain.Member;
 import com.jobmate.dto.MemberDto;
 import com.jobmate.exception.DuplicateEmailException;
 import com.jobmate.exception.DuplicateUsernameException;
 import com.jobmate.mapper.MemberMapper;
-
-import java.util.List;
-import java.util.StringJoiner;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class MemberService {
@@ -20,72 +14,41 @@ public class MemberService {
     @Autowired
     private MemberMapper memberMapper;
 
-    @Autowired
-    private MemberPreferenceService memberPreferenceService;
-
-    private String toCsv(List<String> values) {
-        if (values == null || values.isEmpty()) return null;
-        return String.join(",", values);
-    }
-
+    /** ✅ 회원가입 */
     public void register(MemberDto dto) {
-
-        // 중복 검사
-        if (memberMapper.existsByUsername(dto.getUsername()) > 0) {
+        if (memberMapper.existsByUsername(dto.getUsername())) {
             throw new DuplicateUsernameException("이미 사용 중인 아이디입니다.");
         }
-        if (memberMapper.existsByEmail(dto.getEmail()) > 0) {
-            throw new DuplicateEmailException("이미 사용 중인 이메일입니다.");
+        if (memberMapper.existsByEmail(dto.getEmail())) {
+            throw new DuplicateEmailException("이미 등록된 이메일입니다.");
         }
 
-        // ✅ 1. MEMBER 저장
-        Member member = new Member();
-        member.setUsername(dto.getUsername());
-        member.setPassword(dto.getPassword());
-        member.setEmail(dto.getEmail());
-        member.setName(dto.getName());
-        member.setCareerType(dto.getCareerType());
-        member.setEduCode(dto.getEduCode());
-        member.setMinSalary(dto.getMinSalary());
-        member.setJobCodes(toCsv(dto.getJobCodes()));
-        member.setWorkRegionCodes(toCsv(dto.getWorkRegionCodes()));
+        Member m = new Member();
+        m.setUsername(dto.getUsername());
+        m.setPassword(dto.getPassword());
+        m.setEmail(dto.getEmail());
+        m.setPhone(dto.getPhone());
+        m.setCareerType(dto.getCareerType());
+        m.setRegion(dto.getRegion());
+        m.setCertifications(dto.getCertifications());
 
-        memberMapper.insertMember(member);
-
-        // ✅ 2. MEMBER_PREFERENCE 저장
-        memberPreferenceService.savePreference(dto, member.getId());
+        memberMapper.insert(m); // ✅ 수정된 메서드명
     }
 
-    private String toCsv(String[] arr) {
-        if (arr == null || arr.length == 0) return null;
-        StringJoiner sj = new StringJoiner(",");
-        for (String s : arr) {
-            if (s != null && !s.trim().isEmpty()) {
-                sj.add(s.trim());
-            }
-        }
-        String result = sj.toString();
-        return result.isEmpty() ? null : result;
-    }
-    public Member authenticate(String username, String rawPassword) {
-        if (!StringUtils.hasText(username) || !StringUtils.hasText(rawPassword)) return null;
-        Member found = memberMapper.findByUsername(username);
-        if (found == null || found.getPassword() == null) return null;
-
-        String stored = found.getPassword();
-
-        // (선택) 나중에 비번을 BCrypt로 저장하면 아래 주석을 해제
-        /*
-        if (stored.startsWith("$2a$") || stored.startsWith("$2b$") || stored.startsWith("$2y$")) {
-            return BCrypt.checkpw(rawPassword, stored) ? found : null;
-        }
-        */
-
-        // 현재는 평문 비교 (초기 데이터 호환)
-        return stored.equals(rawPassword) ? found : null;
-    }
-    
+    /** ✅ 아이디로 회원 조회 */
     public Member findByUsername(String username) {
         return memberMapper.findByUsername(username);
+    }
+
+    /** ✅ 로그인 인증 (아이디 + 비밀번호 확인) */
+    public Member authenticate(String username, String password) {
+        Member found = memberMapper.findByUsername(username);
+        if (found == null) return null;
+
+        // 단순 문자열 비교 (추후 암호화 적용 가능)
+        if (found.getPassword().equals(password)) {
+            return found;
+        }
+        return null;
     }
 }
