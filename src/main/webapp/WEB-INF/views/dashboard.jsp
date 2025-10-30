@@ -128,10 +128,12 @@
 <main>
   <div>
     <div class="card-grid">
-      <div class="card" onclick="loadApi('공채')">
-        <h3>공채 정보</h3>
-        <p>최신 채용 행사 및 공채 일정 확인</p>
-      </div>
+<div class="card" onclick="location.href='${pageContext.request.contextPath}/member/employment/list'">
+  <h3>공채 정보</h3>
+  <p>최신 채용 행사 및 공채 일정 확인</p>
+</div>
+
+
       <div class="card" onclick="loadApi('사람인')">
         <h3>사람인 채용 API</h3>
         <p>사람인 데이터를 기반으로 채용 정보 확인</p>
