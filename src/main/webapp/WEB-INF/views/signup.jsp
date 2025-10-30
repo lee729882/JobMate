@@ -91,7 +91,10 @@
 		</div>
 
       <label for="phone">전화번호</label>
-      <form:input path="phone" id="phone" placeholder="010-1234-5678"/>
+<input type="tel" id="phone" name="phone" 
+       placeholder="010-1234-5678"
+       pattern="^01[0-9]-\d{3,4}-\d{4}$"
+       title="010-1234-5678 형식으로 입력하세요" required>
 
       <label for="careerType">경력 여부</label>
       <form:select path="careerType" id="careerType">
