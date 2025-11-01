@@ -5,7 +5,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>내 대시보드 | JobMate</title>
+  <title>JobMate 대시보드</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
@@ -13,102 +13,257 @@
       --bg1:#0ea5e9; --bg2:#6366f1;
       --card:#0b1220aa; --line:#2a3250;
       --text:#e6eefc; --muted:#b6c4e9; --accent:#22d3ee;
-      --btn:#2563eb; --error:#ef4444;
     }
 
     body {
-      margin:0; min-height:100vh; color:var(--text);
-      background: radial-gradient(1200px 800px at 20% 10%, #1b2a4a 0%, #0d1426 60%),
-                  linear-gradient(135deg, var(--bg1), var(--bg2));
-      background-blend-mode: screen, normal;
-      font-family:"Noto Sans KR", system-ui, Segoe UI, sans-serif;
+      margin:0;
+      min-height:100vh;
+      color:var(--text);
+      background:linear-gradient(135deg, var(--bg1), var(--bg2));
+      font-family:"Noto Sans KR", sans-serif;
       display:flex; flex-direction:column;
     }
 
+    /* ───── Header ───── */
     header {
       display:flex; align-items:center; justify-content:space-between;
-      padding:18px 36px;
-      background:rgba(15,25,45,.6);
-      backdrop-filter:blur(8px);
+      padding:16px 40px;
+      background:rgba(10,20,40,.55);
+      backdrop-filter:blur(10px);
       border-bottom:1px solid rgba(255,255,255,.1);
     }
+
+    .left-nav { display:flex; align-items:center; gap:40px; }
+
     .logo {
-      font-size:22px; font-weight:800; color:#fff;
+      font-size:22px; font-weight:800;
       display:flex; align-items:center; gap:10px;
+      color:white; cursor:pointer;
     }
     .logo .mark {
       width:30px; height:30px; border-radius:8px;
       background:conic-gradient(from 180deg at 50% 50%, #22d3ee, #60a5fa, #a78bfa, #22d3ee);
-      box-shadow:0 0 25px #22d3ee55;
-    }
-    .user-info {
-      display:flex; align-items:center; gap:20px;
-      color:#e6eefc; font-size:14px;
-    }
-    .logout-btn {
-      background:#ef4444; color:white; border:none;
-      padding:8px 14px; border-radius:10px; cursor:pointer;
+      box-shadow:0 0 20px #22d3ee77;
     }
 
-    main {
-      flex:1;
-      display:flex; justify-content:center; align-items:flex-start;
-      padding:60px 20px;
+    nav.menu { display:flex; gap:30px; }
+    .menu a {
+      color:#cbd5e1; text-decoration:none; font-size:15px;
+      transition:.2s;
     }
-    .card-grid {
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    .menu a:hover, .menu a.active { color:#22d3ee; }
+
+    .user-info {
+      display:flex; gap:16px;
+      font-size:14px; color:#e6eefc;
+      align-items:center;
+    }
+
+    .logout-btn {
+      background:#ef4444; color:white; border:none;
+      padding:6px 12px; border-radius:8px; cursor:pointer;
+    }
+
+    /* ───── Main Layout ───── */
+    main {
+      flex:1; display:flex; flex-direction:column;
+      align-items:center; padding:50px 20px;
       gap:30px;
-      width:min(100%,1000px);
+    }
+
+    h1 {
+      font-size:26px; font-weight:700; color:white;
+      text-shadow:0 0 10px #22d3ee55;
+    }
+
+    .dashboard-grid {
+      display:grid;
+      grid-template-columns:2fr 1fr;
+      gap:30px;
+      width:min(100%,1300px);
+    }
+
+    .left-panel, .right-panel {
+      display:flex; flex-direction:column; gap:20px;
     }
 
     .card {
-      background:var(--card); border:1px solid var(--line);
-      padding:30px; border-radius:18px;
-      text-align:center;
-      transition:all .25s ease;
-      cursor:pointer;
-      backdrop-filter: blur(8px);
-    }
-    .card:hover {
-      transform:translateY(-6px);
-      box-shadow:0 12px 40px rgba(0,0,0,.35);
-    }
-    .card h3 {
-      margin:0 0 10px; color:#fff; font-size:20px;
-    }
-    .card p { color:var(--muted); font-size:14px; }
-
-    footer {
-      text-align:center;
-      padding:20px;
-      color:#94a3b8;
-      font-size:13px;
-    }
-
-    /* API 결과 영역 */
-    #apiSection {
-      margin-top:40px;
-      width:100%;
-      max-width:1000px;
-      background:rgba(11,18,32,.6);
+      background:var(--card);
       border:1px solid var(--line);
       border-radius:18px;
       padding:24px;
-      color:#dbeafe;
-      display:none;
+      backdrop-filter:blur(10px);
+      transition:.25s;
+      box-shadow:0 8px 25px rgba(0,0,0,0.35);
     }
 
-    #apiTitle { font-size:18px; font-weight:700; margin-bottom:12px; color:#fff; }
-    #apiContent { font-size:14px; color:#cbd5e1; line-height:1.6; }
+    .card:hover { transform:translateY(-3px); }
+    .card h3 { margin-bottom:8px; font-size:17px; color:#fff; }
+    .card p { color:var(--muted); font-size:14px; margin:0; }
+
+    /* 점수 카드 */
+    .stats {
+      display:grid; grid-template-columns:repeat(3,1fr);
+      gap:15px; text-align:center;
+    }
+    .stat-box { background:rgba(255,255,255,0.07); border-radius:12px; padding:18px 10px; }
+    .stat-title { font-size:13px; color:#b6c4e9; }
+    .stat-value { font-size:26px; font-weight:700; color:#22d3ee; }
+
+    /* 공채 리스트 */
+    table {
+      width:100%; border-collapse:collapse; font-size:14px;
+      color:#dbeafe;
+    }
+    th, td { padding:10px; border-bottom:1px solid rgba(255,255,255,0.1); }
+    th { color:#a5b4fc; text-align:left; font-weight:600; }
+    tr:hover { background:rgba(255,255,255,0.05); cursor:pointer; }
+
+    /* 버튼 */
+    .quick-actions {
+      display:flex; justify-content:space-between;
+      width:min(100%,1100px);
+      gap:10px; margin-top:10px;
+    }
+
+    .quick-btn {
+      flex:1; background:rgba(255,255,255,0.08);
+      color:white; border:none; border-radius:12px;
+      padding:12px 0; cursor:pointer;
+      font-weight:500; font-size:14px;
+      transition:.25s;
+    }
+    .quick-btn:hover { background:#2563eb; }
+
+    footer {
+      text-align:center; padding:20px; color:#94a3b8; font-size:13px;
+    }
+.gongchae-table {
+  max-height: 360px;
+  overflow-y: auto;
+  display: block;
+}
+
+.gongchae-table td, .gongchae-table th {
+  white-space: nowrap; /* 🔹 텍스트 줄바꿈 방지 */
+  overflow: hidden;
+  text-overflow: ellipsis; /* 🔹 넘칠 경우 … 처리 */
+}
+
+.gongchae-table th {
+  color:#a5b4fc;
+  font-size:13px;
+  font-weight:600;
+}
+.gongchae-table td:nth-child(2) {
+  width: 45%;  /* 🔹 공고명 비율 확대 */
+}
+
+.gongchae-table tr:hover {
+  background:rgba(255,255,255,0.05);
+  cursor:pointer;
+  transition:0.2s;
+}
+    .pagination {
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  margin-top:15px;
+}
+
+.pagination button {
+  background:rgba(255,255,255,0.1);
+  color:#cbd5e1;
+  border:none;
+  border-radius:6px;
+  padding:6px 10px;
+  cursor:pointer;
+  font-weight:500;
+  transition:0.2s;
+}
+
+.pagination button.active {
+  background:#2563eb;
+  color:white;
+}
+
+.pagination button:hover {
+  background:rgba(255,255,255,0.25);
+}
+.table-card {
+  background:rgba(11,18,32,0.85);
+  border-radius:18px;
+  padding:22px;
+  border:1px solid rgba(255,255,255,0.08);
+  box-shadow:0 8px 25px rgba(0,0,0,0.4);
+  backdrop-filter:blur(12px);
+}
+   /* ✅ 탭 버튼 */
+.job-tabs {
+  display:flex;
+  justify-content:space-between;
+  gap:12px;  /* 🔹 버튼 간격 살짝 늘리기 */
+}
+
+.tab-btn {
+  flex:1;
+  background:rgba(255,255,255,0.07);
+  color:#b6c4e9;
+  border:none;
+  border-radius:8px;
+  padding:8px 0;
+  font-weight:600;
+  cursor:pointer;
+  transition:0.2s;
+}
+.tab-btn:hover { background:rgba(255,255,255,0.15); }
+.tab-btn.active {
+  background:#2563eb;
+  color:white;
+  box-shadow:0 0 10px rgba(37,99,235,0.4);
+}
+
+.job-tabs {
+  display:flex;
+  gap:10px;
+  margin-bottom:12px;
+}
+.tab-btn {
+  flex:1;
+  background:rgba(255,255,255,0.07);
+  color:#b6c4e9;
+  border:none;
+  border-radius:8px;
+  padding:8px 0;
+  font-weight:600;
+  cursor:pointer;
+  transition:0.2s;
+}
+.tab-btn:hover { background:rgba(255,255,255,0.15); }
+.tab-btn.active {
+  background:#2563eb;
+  color:white;
+  box-shadow:0 0 10px rgba(37,99,235,0.4);
+}
+.job-tab-content { display:none; }
+
+   
   </style>
 </head>
 
 <body>
 <header>
-  <div class="logo">
-    <div class="mark"></div>
-    JobMate
+  <div class="left-nav">
+    <div class="logo" onclick="location.href='${pageContext.request.contextPath}/member/dashboard'">
+      <div class="mark"></div> JobMate
+    </div>
+    <nav class="menu">
+      <a href="${pageContext.request.contextPath}/member/dashboard" class="active">대시보드</a>
+      <a href="${pageContext.request.contextPath}/member/todo">To-Do</a>
+      <a href="${pageContext.request.contextPath}/member/interview">면접 AI</a>
+            <a href="${pageContext.request.contextPath}/member/community">취업 커뮤니티</a>
+      <a href="${pageContext.request.contextPath}/member/profile">My Profile</a>
+    </nav>
   </div>
 
   <div class="user-info">
@@ -118,7 +273,6 @@
       <c:out value="${loginMember.careerType == 'EXP' ? '경력직' : '신입'}"/> |
       <c:out value="${loginMember.phone}"/>
     </div>
-
     <form action="${pageContext.request.contextPath}/member/logout" method="post">
       <button type="submit" class="logout-btn">로그아웃</button>
     </form>
@@ -126,60 +280,123 @@
 </header>
 
 <main>
-  <div>
-    <div class="card-grid">
-<div class="card" onclick="location.href='${pageContext.request.contextPath}/member/employment/list'">
-  <h3>공채 정보</h3>
-  <p>최신 채용 행사 및 공채 일정 확인</p>
-</div>
+  <h1><c:out value="${loginMember.name}"/> 님, 오늘도 취업 준비 화이팅 💪</h1>
 
-
-      <div class="card" onclick="loadApi('사람인')">
-        <h3>사람인 채용 API</h3>
-        <p>사람인 데이터를 기반으로 채용 정보 확인</p>
+  <div class="dashboard-grid">
+    <!-- ✅ 왼쪽 패널 -->
+    <div class="left-panel">
+      
+      <!-- JobMate 점수 카드 -->
+      <div class="card">
+        <div class="stats">
+          <div class="stat-box"><div class="stat-title">JobMate 점수</div><div class="stat-value">732</div></div>
+          <div class="stat-box"><div class="stat-title">오늘의 일정</div><div class="stat-value">0</div></div>
+			<div class="stat-box" onclick="location.href='${pageContext.request.contextPath}/favorite/list'" style="cursor:pointer;">
+			  <div class="stat-title">찜한 공고</div>
+			  <div class="stat-value">${favoriteCount}</div>
+			</div>
+        </div>
       </div>
-      <div class="card" onclick="loadApi('잡코리아')">
-        <h3>잡코리아 API</h3>
-        <p>잡코리아 연동 채용 데이터 보기</p>
-      </div>
-    </div>
 
-    <!-- ✅ API 데이터 출력 영역 -->
-    <div id="apiSection">
-      <div id="apiTitle">API 결과</div>
-      <div id="apiContent">여기에 선택한 API의 데이터가 표시됩니다.</div>
+      <!-- 📢 공채속보 카드 -->
+      <div class="card">
+
+        <!-- ✅ 탭 버튼 -->
+        <div class="job-tabs">
+          <button class="tab-btn active" onclick="showTab('gongchae')">공채속보</button>
+          <button class="tab-btn" onclick="showTab('saramin')">사람인</button>
+          <button class="tab-btn" onclick="showTab('jobkorea')">잡코리아</button>
+        </div>
+
+        <!-- ✅ 공채속보 탭 -->
+        <div id="gongchae" class="job-tab-content" style="display:block;">
+          <table class="gongchae-table">
+            <thead>
+              <tr>
+                <th>기업명</th>
+                <th>공고명</th>
+                <th>기업구분</th>
+                <th>고용형태</th>
+                <th>마감일</th>
+              </tr>
+            </thead>
+            <tbody>
+              <c:if test="${empty employmentList}">
+                <tr><td colspan="5" style="text-align:center; padding:20px;">불러올 공채 정보가 없습니다.</td></tr>
+              </c:if>
+
+              <c:forEach var="job" items="${employmentList}">
+                <tr onclick="location.href='${pageContext.request.contextPath}/member/employment/detail/${job.empSeqno}'">
+                  <td>${job.empBusiNm}</td>
+                  <td>${job.empWantedTitle}</td>
+                  <td>${job.coClcdNm}</td>
+                  <td>${job.empWantedTypeNm}</td>
+                  <td>${job.empWantedEndt}</td>
+                </tr>
+              </c:forEach>
+            </tbody>
+          </table>
+
+          <div class="pagination">
+            <c:if test="${currentPage > 1}">
+              <button onclick="location.href='${pageContext.request.contextPath}/member/dashboard?page=${currentPage - 1}'">◀ 이전</button>
+            </c:if>
+
+            <c:forEach begin="1" end="${currentPage + 2}" var="i">
+              <button 
+                onclick="location.href='${pageContext.request.contextPath}/member/dashboard?page=${i}'"
+                class="<c:out value='${i == currentPage ? "active" : ""}'/>">${i}</button>
+            </c:forEach>
+
+            <button onclick="location.href='${pageContext.request.contextPath}/member/dashboard?page=${currentPage + 1}'">다음 ▶</button>
+          </div>
+        </div>
+
+        <!-- ✅ 사람인 탭 -->
+        <div id="saramin" class="job-tab-content" style="display:none; text-align:center; padding:25px;">
+          <p style="color:#b6c4e9; font-size:15px;">💡 사람인 API 연동 개발 준비 중입니다.</p>
+        </div>
+
+        <!-- ✅ 잡코리아 탭 -->
+        <div id="jobkorea" class="job-tab-content" style="display:none; text-align:center; padding:25px;">
+          <p style="color:#b6c4e9; font-size:15px;">💡 잡코리아 API 연동 개발 준비 중입니다.</p>
+        </div>
+      </div>
+    </div> <!-- ✅ left-panel 닫음 -->
+
+    <!-- ✅ 오른쪽 패널 -->
+    <div class="right-panel">
+      <div class="card"><h3>💡 이력서 기반 추천</h3><p>AI 분석으로 맞춤형 채용공고 제공</p></div>
+      <div class="card"><h3>📅 면접 일정</h3><p>등록된 일정이 없습니다.</p></div>
+      <div class="card"><h3>🏅 JobMate 점수</h3><p>상위 25% (235명 중 58위)</p></div>
     </div>
+  </div> <!-- ✅ dashboard-grid 닫음 -->
+
+  <!-- ✅ 하단 빠른 액션 -->
+  <div class="quick-actions">
+    <button class="quick-btn">내 지원현황</button>
+    <button class="quick-btn">최근 본 공고</button>
+    <button class="quick-btn">AI 면접 바로가기</button>
+    <button class="quick-btn">직렬별 랭킹</button>
   </div>
 </main>
+
+<script>
+function showTab(tabId) {
+  // 모든 탭 콘텐츠 숨기기
+  document.querySelectorAll('.job-tab-content').forEach(el => el.style.display = 'none');
+  // 버튼 초기화
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  // 선택된 탭 표시
+  document.getElementById(tabId).style.display = 'block';
+  // 클릭한 버튼 활성화
+  event.currentTarget.classList.add('active');
+}
+</script>
+
 
 <footer>
   © 2025 JobMate. All rights reserved.
 </footer>
-
-<script>
-  function loadApi(type) {
-    const section = document.getElementById("apiSection");
-    const title = document.getElementById("apiTitle");
-    const content = document.getElementById("apiContent");
-    
-    title.textContent = type + " API 결과";
-    section.style.display = "block";
-    
-    // ⚙️ 추후 실제 API 연동
-    switch(type){
-      case '공채':
-        content.innerHTML = "고용24 또는 워크넷 API 연동 예정입니다.<br>공채 일정과 채용공고를 표시합니다.";
-        break;
-      case '사람인':
-        content.innerHTML = "사람인 오픈 API 데이터를 기반으로 채용 정보를 불러올 예정입니다.";
-        break;
-      case '잡코리아':
-        content.innerHTML = "잡코리아 API 연동으로 최신 채용 공고를 보여줄 예정입니다.";
-        break;
-    }
-    section.scrollIntoView({ behavior: "smooth" });
-  }
-</script>
 </body>
 </html>
-	

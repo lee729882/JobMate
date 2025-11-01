@@ -58,8 +58,8 @@ public class LoginController {
         return "redirect:/member/login";
     }
 
-    /** ✅ 로그인 후 사용자 대시보드 */
-    @GetMapping("/dashboard")
+    /** ✅ 로그인 후 사용자 전용 대시보드 */
+    @GetMapping("/member/profile")
     public String dashboard(HttpSession session, Model model) {
         Member loginMember = (Member) session.getAttribute("loginMember");
 
@@ -70,4 +70,5 @@ public class LoginController {
         model.addAttribute("loginMember", loginMember);
         return "dashboard"; // /WEB-INF/views/dashboard.jsp
     }
+
 }
