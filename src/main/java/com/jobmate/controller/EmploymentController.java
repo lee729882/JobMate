@@ -5,6 +5,7 @@ import com.jobmate.domain.Member;
 import com.jobmate.api.EmploymentDetailResponse;
 import com.jobmate.service.EmploymentService;
 import com.jobmate.service.FavoriteService;
+import com.jobmate.service.RecentViewedService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -25,6 +26,10 @@ public class EmploymentController {
     private EmploymentService employmentService;
     @Autowired
     private FavoriteService favoriteService;
+    
+    @Autowired
+    private RecentViewedService recentViewedService;
+
     /** ✅ 공채속보 목록 */
     @GetMapping("/list")
     public String list(@RequestParam(defaultValue = "1") int page, Model model) {
@@ -48,13 +53,22 @@ public class EmploymentController {
 
         // ✅ 로그인 사용자 확인
         Member loginMember = (Member) session.getAttribute("loginMember");
-
         boolean isFavorite = false;
-        if (loginMember != null) {
-            // ✅ 출처별로 찜 여부 체크
-            isFavorite = favoriteService.isFavorite(loginMember.getId(), empSource, empSeqno);
-        }
 
+        if (loginMember != null) {
+            // 🔹 찜 여부 확인
+            isFavorite = favoriteService.isFavorite(loginMember.getId(), "WORK24", empSeqno);
+
+            // 🔹 최근 본 공고 기록 추가
+            recentViewedService.addRecentViewed(
+                loginMember.getId(),
+                "WORK24",
+                empSeqno,
+                detail.getEmpWantedTitle(),
+                detail.getEmpBusiNm(),
+                detail.getEmpWantedEndt()
+            );
+        }
         model.addAttribute("isFavorite", isFavorite);
         return "/employmentDetail";
     }
