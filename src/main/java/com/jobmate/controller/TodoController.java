@@ -25,10 +25,21 @@ public class TodoController {
 
     @PostMapping("/add")
     public String add(@ModelAttribute Todo todo, Principal principal){
-        todo.setUsername(principal.getName());
+        // 1) 로그인 안 되어 있어도 안전하게
+        String username = (principal != null) ? principal.getName() : "guest";
+        todo.setUsername(username);
+
+        // 2) 제목/내용 가벼운 정리(공백 방지)
+        if (todo.getTitle() != null)  todo.setTitle(todo.getTitle().trim());
+        if (todo.getContent() != null) todo.setContent(todo.getContent().trim());
+
+        // 3) 저장
         svc.addTodo(todo);
+
+        // 4) 리스트로 리다이렉트
         return "redirect:/member/todo";
     }
+
 
     @PostMapping("/toggle")
     public String toggle(@RequestParam Long id){

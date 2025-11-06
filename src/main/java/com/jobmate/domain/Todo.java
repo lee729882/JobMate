@@ -9,7 +9,12 @@ public class Todo {
     private String username;
     private String title;
     private String content;
-    private boolean completed;           // boolean으로(게터는 isCompleted)
+    private boolean completed;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    // ⬇️ DB INSERT용 보조 게터
+    public int getCompletedInt() {
+        return this.completed ? 1 : 0;
+    }
 }
