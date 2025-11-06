@@ -1,0 +1,44 @@
+package com.jobmate.controller;
+
+import com.jobmate.domain.Todo;
+import com.jobmate.service.TodoService;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
+import java.util.List;
+
+@Controller
+@RequestMapping("/member/todo")
+public class TodoController {
+    private final TodoService svc;
+    public TodoController(TodoService svc) { this.svc = svc; }
+
+    @GetMapping
+    public String list(Model model, Principal principal){
+        String username = principal != null ? principal.getName() : "guest";
+        model.addAttribute("todos", svc.getTodos(username));
+        model.addAttribute("todo", new Todo());
+        return "todo";
+    }
+
+    @PostMapping("/add")
+    public String add(@ModelAttribute Todo todo, Principal principal){
+        todo.setUsername(principal.getName());
+        svc.addTodo(todo);
+        return "redirect:/member/todo";
+    }
+
+    @PostMapping("/toggle")
+    public String toggle(@RequestParam Long id){
+        svc.toggleCompleted(id);
+        return "redirect:/member/todo";
+    }
+
+    @PostMapping("/delete")
+    public String delete(@RequestParam Long id){
+        svc.deleteTodo(id);
+        return "redirect:/member/todo";
+    }
+}
