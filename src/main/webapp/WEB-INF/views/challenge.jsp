@@ -47,6 +47,15 @@
   </style>
 </head>
 <body>
+
+ <!-- ✅ 상단 네비게이션 추가 -->
+  <nav style="margin-bottom:30px; font-size:16px; font-weight:600;">
+  <a href="${pageContext.request.contextPath}/admin/public-todo"
+     style="margin-right:18px; color:#ffd07f; text-decoration:none;">공용 미션 관리</a>
+  <a href="${pageContext.request.contextPath}/member/todo"
+     style="color:#7fc8ff; text-decoration:none;">To-Do | JobMate</a>
+</nav>
+
   <h1>💪 공용 미션</h1>
 
   <c:if test="${not empty msg}">
