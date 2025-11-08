@@ -31,10 +31,19 @@ public class ChallengeController {
         String user = (principal != null) ? principal.getName() : "guest";
         try {
             int award = svc.complete(todoId, user);
-            ra.addFlashAttribute("msg", "✅ 미션 완료! +" + award + "점 획득");
+
+            if (award > 0) {
+                // 🟢 새로 완료한 경우
+                ra.addFlashAttribute("msg", "✅ 미션 완료! +" + award + "점 획득 🎉");
+            } else {
+                // 🔵 이미 완료한 경우
+                ra.addFlashAttribute("msg", "ℹ️ 이미 완료한 미션입니다.");
+            }
+
         } catch (Exception e) {
-            ra.addFlashAttribute("err", "❌ " + e.getMessage());
+            ra.addFlashAttribute("err", "❌ 오류: " + e.getMessage());
         }
         return "redirect:/member/challenge";
     }
+
 }

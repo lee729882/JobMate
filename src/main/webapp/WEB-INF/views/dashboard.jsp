@@ -289,8 +289,16 @@
       <!-- JobMate 점수 카드 -->
       <div class="card">
         <div class="stats">
-          <div class="stat-box"><div class="stat-title">JobMate 점수</div><div class="stat-value">732</div></div>
-          <div class="stat-box"><div class="stat-title">오늘의 일정</div><div class="stat-value">0</div></div>
+          <div class="stat-box">
+          <div class="stat-title">JobMate 점수</div>
+          <div class="stat-value">
+          ${empty jobmateScore ? 0 : jobmateScore}
+          </div>
+          </div>
+          <div class="stat-box">
+          <div class="stat-title">오늘의 일정</div>
+          <div class="stat-value">0</div>
+          </div>
 			<div class="stat-box" onclick="location.href='${pageContext.request.contextPath}/favorite/list'" style="cursor:pointer;">
 			  <div class="stat-title">찜한 공고</div>
 			  <div class="stat-value">${favoriteCount}</div>
