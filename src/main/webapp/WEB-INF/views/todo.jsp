@@ -128,6 +128,15 @@
       </div>
     </nav>
   </header>
+  
+  
+  <!-- Flash Message -->
+  <c:if test="${not empty msg}">
+    <div class="toast ok">${msg}</div>
+  </c:if>
+  <c:if test="${not empty err}">
+    <div class="toast err">${err}</div>
+  </c:if>
 
   <!-- ===== 본문 ===== -->
   <div class="container">
@@ -158,11 +167,12 @@
                 <c:forEach var="t" items="${todos}">
                   <tr>
                     <td>
-                      <form action="${pageContext.request.contextPath}/member/todo/toggle" method="post" style="display:inline;">
+                     <!-- ✅ 완료는 한 방향(0→1)만: 최초 1회만 +1점 -->
+                      <form action="${pageContext.request.contextPath}/member/todo/complete" method="post" style="display:inline;">
                         <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                         <input type="hidden" name="id" value="${t.id}"/>
-                        <button class="icon-btn" title="완료 전환" type="submit">
-                          ${t.completed ? '✅ 완료' : '⬜ 미완'}
+                        <button class="icon-btn" type="submit" ${t.completed ? "disabled" : ""}>
+                          ${t.completed ? '✅ 완료' : '⬜ 완료하기'}
                         </button>
                       </form>
                     </td>
@@ -192,20 +202,25 @@
           <div class="title" style="font-size:30px;">새 할 일 추가</div>
         </div>
         <div class="form">
+        
+         <!-- ✅ 하루 10개 제한: remainToday/todayCount가 있으면 안내 -->
+         <c:if test="${not empty todayCount}">
+            <div style="color:#b6c4e9; margin-bottom:10px;">
+              오늘 추가한 개수: <b>${todayCount}</b>개
+              <c:if test="${not empty remainToday}">
+                &nbsp;|&nbsp; 남은 가능: <b>${remainToday}</b>개
+              </c:if>
+            </div>
+          </c:if>
+         
           <form class="row" action="${pageContext.request.contextPath}/member/todo/add" method="post" style="row-gap:14px;">
             <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
 
-            <input class="input" type="text"   name="title"   placeholder="ㄴㄴ" required />
+            <input class="input" type="text"   name="title"   placeholder="할 일 제목" required />
             <input class="input" type="text"   name="content" placeholder="세부 내용(선택)" />
 
-            <!-- 체크/미체크 모두 전달 -->
-            <input type="hidden" name="completed" value="false"/>
-            <label class="btn secondary" style="gap:10px;">
-              <input type="checkbox" name="completed" value="true"
-                     style="accent-color: var(--primary); transform:scale(1.2)"/> 완료로 추가
-            </label>
-
-            <button class="btn" type="submit">+ 추가</button>
+            <!-- ✅ 생성은 항상 미완료로 -->
+             <button class="btn" type="submit" ${remainToday!=null && remainToday<=0 ? "disabled" : ""}>+ 추가</button>
           </form>
         </div>
       </aside>

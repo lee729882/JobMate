@@ -96,7 +96,7 @@
       <div class="form-row"><label>제목</label><input name="title" required></div>
       <div class="form-row"><label>내용</label><input name="content"></div>
       <div class="form-row"><label>난이도</label><input name="difficulty" type="number" min="1" max="5" value="1"></div>
-      <div class="form-row"><label>기본점수</label><input name="basePoints" type="number" value="10"></div>
+      <div class="form-row"><label>기본점수</label><input name="basePoints" type="number" value="100"></div>
       <div class="form-row"><label>시작일</label><input name="startDate" type="date"></div>
       <div class="form-row"><label>종료일</label><input name="endDate" type="date"></div>
       <div class="form-row"><label>반복</label>

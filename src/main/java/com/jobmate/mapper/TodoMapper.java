@@ -14,6 +14,15 @@ public interface TodoMapper {
     "ORDER BY CREATED_AT DESC"
   })
   List<Todo> findByUsername(@Param("username") String username);
+  
+  /** ✅ 오늘 추가한 To-Do 개수 */
+  @Select({
+      "SELECT COUNT(*)",
+      "FROM JM_TODO",
+      "WHERE USERNAME = #{username}",
+      "  AND TRUNC(CREATED_AT) = TRUNC(SYSDATE)"
+  })
+  int countCreatedToday(@Param("username") String username);
 
   // ✅ 여기 부분이 핵심 (INSERT 수정됨)
   @Insert({
@@ -27,7 +36,41 @@ public interface TodoMapper {
 
   @Delete("DELETE FROM JM_TODO WHERE ID = #{id}")
   void deleteTodo(@Param("id") Long id);
+  
+//✅ 오늘 해당 사용자가 만든 투두 개수 (하루 10개 제한 체크용)
+ @Select({
+     "SELECT COUNT(*)",
+     "FROM JM_TODO",
+     "WHERE USERNAME = #{username}",
+     "AND TRUNC(CREATED_AT) = TRUNC(SYSDATE)"
+})
+ int countToday(@Param("username") String username);
 
+ // ✅ 완료 상태만 빠르게 확인(점수 중복 방지용)
+ @Select("SELECT ID, USERNAME, COMPLETED FROM JM_TODO WHERE ID = #{id}")
+ Todo findSimple(@Param("id") Long id);
+
+ // ✅ 완료 상태를 명시적으로 변경(본인 것만 업데이트)
+ @Update({
+     "UPDATE JM_TODO",
+        "SET COMPLETED = #{completedInt}",
+            "UPDATED_AT = SYSTIMESTAMP",
+      "WHERE ID = #{id}",
+        "AND USERNAME = #{username}"
+ })
+ int updateCompleted(@Param("id") Long id,
+                     @Param("username") String username,
+                     @Param("completedInt") int completedInt);
+ 
+ /** ✅ 완료처리 (0→1로 바뀔 때만 적용) */
+ @Update({
+     "UPDATE JM_TODO",
+     "SET COMPLETED = 1, UPDATED_AT = SYSTIMESTAMP",
+     "WHERE ID = #{id} AND COMPLETED = 0"
+ })
+ int completeOnce(@Param("id") Long id);
+
+  /*
   @Update({
     "UPDATE JM_TODO",
     "SET COMPLETED = CASE WHEN COMPLETED = 1 THEN 0 ELSE 1 END,",
@@ -35,4 +78,5 @@ public interface TodoMapper {
     "WHERE ID = #{id}"
   })
   void toggleCompleted(@Param("id") Long id);
+  */
 }
