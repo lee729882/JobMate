@@ -36,13 +36,14 @@ public class TodoService {
     // 도메인에 boolean completed가 있다면 completedInt 세터 같이 사용
     t.setCompleted(false);           // 편의
     t.setCompletedInt(0);            // 실제 DB 저장용
+    
     todoMapper.insertTodo(t);
   }
 
   /** 삭제 */
   @Transactional
-  public void delete(Long id) {
-    todoMapper.deleteTodo(id);
+  public void delete(Long id, String username) {
+    todoMapper.deleteTodo(id, username);
   }
 
   /**
@@ -51,7 +52,16 @@ public class TodoService {
    */
   @Transactional
   public int complete(Long id, String username) {
-    int changed = todoMapper.completeOnce(id); // 0->1로 바뀔 때만 1
+	// 본인 데이터만 조회
+      Todo simple = todoMapper.findSimple(id, username);
+      if (simple == null) {
+          throw new IllegalArgumentException("할 일을 찾을 수 없거나 권한이 없습니다.");
+      }
+      if (simple.getCompletedInt() == 1) {
+          return 0; // 이미 완료 → 점수 적립 X
+      }
+
+    int changed = todoMapper.completeOnce(id, username); // 0->1로 바뀔 때만 1
     if (changed == 1) {
       userScoreMapper.addScore(username, 1);   // 최초 완료 보상 +1
       return 1;

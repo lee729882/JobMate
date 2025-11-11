@@ -21,6 +21,8 @@ public class TodoController {
   public String list(Model model, HttpSession session) {
     Member login = (Member) session.getAttribute("loginMember");
     if (login == null) return "redirect:/member/login";
+    
+    String username = login.getUsername(); // 프로젝트에 맞는 식별자 사용
     model.addAttribute("todos", todoService.list(login.getUsername()));
     return "todo";  // todo.jsp
   }
@@ -29,9 +31,11 @@ public class TodoController {
   @PostMapping("/add")
   public String add(@RequestParam String title,
                     @RequestParam(required=false, defaultValue="") String content,
-                    HttpSession session, RedirectAttributes ra) {
+                    HttpSession session,
+                    RedirectAttributes ra) {
     Member login = (Member) session.getAttribute("loginMember");
     if (login == null) return "redirect:/member/login";
+    String username = login.getUsername();
 
     try {
       todoService.add(login.getUsername(), title, content);
@@ -43,19 +47,29 @@ public class TodoController {
   }
 
   @PostMapping("/delete")
-  public String delete(@RequestParam Long id, RedirectAttributes ra) {
-    todoService.delete(id);
-    ra.addFlashAttribute("msg", "삭제 완료!");
-    return "redirect:/member/todo";
-  }
+  public String delete(@RequestParam Long id,
+          HttpSession session,
+          RedirectAttributes ra) {
+	  Member login = (Member) session.getAttribute("loginMember");
+	    if (login == null) return "redirect:/member/login";
+
+	    String username = login.getUsername(); // 🔹 세션에서 사용자명 가져오기
+	    todoService.delete(id, username);      // 🔹 username 함께 전달
+
+	    ra.addFlashAttribute("msg", "삭제 완료!");
+	    return "redirect:/member/todo";
+	}
 
   /** ✅ 완료 버튼 (최초 1회만 +1점) */
   @PostMapping("/complete")
-  public String complete(@RequestParam Long id, HttpSession session, RedirectAttributes ra) {
+  public String complete(@RequestParam Long id,
+		  HttpSession session,
+		  RedirectAttributes ra) {
     Member login = (Member) session.getAttribute("loginMember");
     if (login == null) return "redirect:/member/login";
+    String username = login.getUsername();
 
-    int gained = todoService.complete(id, login.getUsername());
+    int gained = todoService.complete(id, username);
     if (gained == 1) {
       ra.addFlashAttribute("msg", "✅ 완료! +1점 적립");
     } else {
