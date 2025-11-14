@@ -247,7 +247,142 @@
 }
 .job-tab-content { display:none; }
 
-   
+
+/* 오른쪽 패널 전체 구조 */
+.right-panel {
+    display: grid;
+    grid-template-columns: 180px 180px;
+    gap: 10px;
+    justify-content: center;
+}
+
+/* ================================
+   🔥 카드 1,2 — 전용 스타일 (완전 독립)
+================================ */
+
+.r-card-full {
+    grid-column: 1 / 3;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    height: 82px;
+    padding: 10px 18px;
+}
+
+/* 아이콘 전용 */
+.r-icon-full {
+    font-size: 44px;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 텍스트 묶음 */
+.r-txt-full {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+}
+
+/* 제목 */
+.r-title-full {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+}
+
+/* 부제목 */
+.r-sub-full {
+    font-size: 13px;
+    opacity: 0.65;
+    margin: 0;
+}
+
+
+/* ================================
+   🔥 카드 3,4 (아이콘 위 + 텍스트 아래)
+================================ */
+.r-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 120px;
+    text-align: center;
+    gap: 8px;
+    padding: 10px 10px;
+}
+
+/* 중앙 아이콘 */
+.r-box .r-icon-sm {
+    font-size: 40px !important;
+    margin: 0;
+}
+
+/* 제목 */
+.r-title-sm {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+}
+
+/* 부제목 */
+.r-sub-sm {
+    font-size: 13px;
+    opacity: 0.65;
+    margin: 0;
+}
+
+/* 카드 내 텍스트 전체적으로 위로 */
+.r-title, .r-sub {
+    margin-top: -2px !important;
+}
+
+
+/* 📌 카드 5 전체 컨테이너 */
+.r-wide-small {
+    grid-column: 1 / 3;
+    height: 80px;
+    display: flex;
+    justify-content: space-evenly;   /* 🔥 두 항목을 균등 정렬 */
+    align-items: center;
+    padding: 0 20px;
+    gap: 20px;
+}
+
+/* 📌 내부 메뉴 — 아이콘 + 텍스트 가로 나란히 */
+.r-menu-box {
+    display: flex;
+    flex-direction: row !important; 
+    align-items: center !important;   /* 🔥 아이콘 + 글씨 수직 정렬 */
+    justify-content: center;
+    gap: 6px;                          /* 🔥 여백 최소화 */
+    cursor: pointer;
+    padding: 4px 6px;                  /* 🔥 최소 패딩 */
+}
+
+/* 📌 아이콘 (조금 작게 + 정중앙) */
+.r-small-icon {
+    font-size: 18px !important;
+    display: flex;
+    align-items: center;
+}
+
+/* 📌 글씨 — 아이콘 옆에 딱 붙게 */
+.r-small-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: #e6eefc;
+    white-space: nowrap;              /* 🔥 줄바꿈 금지 */
+}
+
+
+
+
   </style>
 </head>
 
@@ -372,13 +507,63 @@
       </div>
     </div> <!-- ✅ left-panel 닫음 -->
 
-    <!-- ✅ 오른쪽 패널 -->
-    <div class="right-panel">
-      <div class="card"><h3>💡 이력서 기반 추천</h3><p>AI 분석으로 맞춤형 채용공고 제공</p></div>
-      <div class="card"><h3>📅 면접 일정</h3><p>등록된 일정이 없습니다.</p></div>
-      <div class="card"><h3>🏅 JobMate 점수</h3><p>상위 25% (235명 중 58위)</p></div>
+<div class="right-panel">
+
+    <!-- 카드 1 (전체폭 1행) -->
+    <div class="card r-card-full" onclick="location.href='${pageContext.request.contextPath}/controller/career/tests'">
+    <div class="r-icon-full">🧭</div>
+    <div class="r-txt-full">
+        <div class="r-title-full">직업심리검사</div>
+        <div class="r-sub-full">검사 시작하기</div>
     </div>
-  </div> <!-- ✅ dashboard-grid 닫음 -->
+</div>
+
+    <!-- 카드 2 (전체폭 2행) -->
+    <div class="card r-card-full" onclick="location.href='${pageContext.request.contextPath}/member/community'">
+    <div class="r-icon-full">📣</div>
+    <div class="r-txt-full">
+        <div class="r-title-full">취업 커뮤니티</div>
+        <div class="r-sub-full">인기 게시글 확인하기</div>
+    </div>
+</div>
+
+    <!-- 카드 3 (왼쪽) -->
+<div class="card r-box" onclick="location.href='${pageContext.request.contextPath}/member/todo'">
+    <div class="r-icon-sm">📅</div>
+    <div class="r-txt-wrap">
+        <div class="r-title">To-Do</div>
+        <div class="r-sub-sm">할 일 목록</div>
+    </div>
+</div>
+
+
+    <!-- 카드 4 (오른쪽) -->
+<div class="card r-box" onclick="location.href='${pageContext.request.contextPath}/member/profile'">
+    <div class="r-icon-sm">⭐</div>
+    <div class="r-txt-wrap">
+        <div class="r-title">JobMate 점수</div>
+        <div class="r-sub-sm">상위 25%</div>
+    </div>
+</div>
+
+
+    <!-- 카드 5 — 전체폭 + 내부 두 버튼 -->
+<div class="card r-wide-small">
+    <div class="r-menu-box" onclick="location.href='${pageContext.request.contextPath}/member/profile'">
+        <div class="r-small-icon">👤</div>
+        <div class="r-small-text">My Profile</div>
+    </div>
+
+    <div class="r-menu-box" onclick="location.href='https://www.mokpo.ac.kr/www/312/subview.do'">
+        <div class="r-small-icon">🏫</div>
+        <div class="r-small-text">학교 채용 정보</div>
+    </div>
+</div>
+
+</div>
+
+
+
 
   <!-- ✅ 하단 빠른 액션 -->
   <div class="quick-actions">
