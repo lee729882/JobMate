@@ -86,6 +86,63 @@ input, select {
               0 0 60px rgba(52, 211, 153, 0.2);
 }
 
+/* 프로필 이미지가 없을 때 표시할 기본 아바타 */
+.default-avatar {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 3px solid #34d399;
+  box-shadow: 0 0 20px rgba(52, 211, 153, 0.3),
+              0 0 40px rgba(52, 211, 153, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1e3a8a, #3b82f6, #34d399);
+  font-size: 48px;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  margin: 0 auto 20px;
+}
+
+.default-avatar::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transform: rotate(45deg);
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.default-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(52, 211, 153, 0.5),
+              0 0 60px rgba(52, 211, 153, 0.2);
+}
+
+.default-avatar-icon {
+  font-size: 60px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  position: relative;
+  z-index: 1;
+}
+
 .camera-icon-overlay {
   position: absolute;
   bottom: 5px;
@@ -196,10 +253,25 @@ input, select {
 
     <input type="hidden" name="id" value="${member.id}" />
 
-    <!-- 프로필 이미지 업로드 영역 재디자인 -->
+    <!-- 프로필 이미지 업로드 영역 -->
     <div class="profile-upload-container">
       <div class="profile-img-wrapper">
-        <img src="${profileUrl}" alt="profile" class="profile-img" id="profilePreview" />
+        <c:choose>
+          <c:when test="${empty member.profileImage}">
+            <!-- 프로필 이미지가 없을 때: 이니셜 또는 아이콘 표시 -->
+            <div class="default-avatar" id="defaultAvatar">
+              <span class="default-avatar-icon">👤</span>
+            </div>
+            <img src="${profileUrl}" alt="profile" class="profile-img" id="profilePreview" style="display:none;" />
+          </c:when>
+          <c:otherwise>
+            <!-- 프로필 이미지가 있을 때 -->
+            <div class="default-avatar" id="defaultAvatar" style="display:none;">
+              <span class="default-avatar-icon">👤</span>
+            </div>
+            <img src="${profileUrl}" alt="profile" class="profile-img" id="profilePreview" />
+          </c:otherwise>
+        </c:choose>
         <label for="profileImageFile" class="camera-icon-overlay"></label>
       </div>
       
@@ -255,14 +327,18 @@ input, select {
   </form>
 </main>
 
-<!-- 이미지 미리보기 스크립트 추가1111222233 -->
+<!-- 이미지 미리보기 스크립트 -->
 <script>
 function previewImage(event) {
   const file = event.target.files[0];
   if (file) {
     const reader = new FileReader();
     reader.onload = function(e) {
-      document.getElementById('profilePreview').src = e.target.result;
+      // 기본 아바타 숨기고 이미지 표시
+      document.getElementById('defaultAvatar').style.display = 'none';
+      const profileImg = document.getElementById('profilePreview');
+      profileImg.style.display = 'block';
+      profileImg.src = e.target.result;
     };
     reader.readAsDataURL(file);
   }

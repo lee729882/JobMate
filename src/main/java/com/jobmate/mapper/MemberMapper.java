@@ -16,8 +16,8 @@ public interface MemberMapper {
     @Select("SELECT CASE WHEN COUNT(1) > 0 THEN 1 ELSE 0 END FROM MEMBER WHERE EMAIL = #{email}")
     boolean existsByEmail(String email);
 
-    @Insert("INSERT INTO MEMBER (ID, USERNAME, PASSWORD, EMAIL, NAME, PHONE, CAREER_TYPE, REGION, CERTIFICATIONS, PROFILE_IMAGE) " +
-            "VALUES (MEMBER_SEQ.NEXTVAL, #{username}, #{password}, #{email}, #{name}, #{phone}, #{careerType}, #{region}, #{certifications}, #{profileImage})")
+    @Insert("INSERT INTO MEMBER (ID, USERNAME, PASSWORD, EMAIL, NAME, PHONE, CAREER_TYPE, REGION, CERTIFICATIONS) " +
+            "VALUES (MEMBER_SEQ.NEXTVAL, #{username}, #{password}, #{email}, #{name}, #{phone}, #{careerType}, #{region}, #{certifications})")
     void insertMember(Member member);
 
     @Select("SELECT ID, USERNAME, PASSWORD, EMAIL, NAME, PHONE, CAREER_TYPE, REGION, CERTIFICATIONS, PROFILE_IMAGE " +
