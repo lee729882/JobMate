@@ -98,11 +98,20 @@
 
  <!-- ✅ 상단 네비게이션 추가 -->
   <nav style="margin-bottom:30px;">
-    <a href="${pageContext.request.contextPath}/member/challenge"
-       style="margin-right:15px; color:#7fc8ff; font-weight:600; text-decoration:none;">공용 미션</a>
+  <a href="${pageContext.request.contextPath}/member/challenge"
+     style="margin-right:15px; color:#7fc8ff; font-weight:600; text-decoration:none;">
+    공용 미션
+  </a>
+
+  <c:if test="${sessionScope.loginMember != null 
+               && sessionScope.loginMember.username == 'minwoo0821'}">
     <a href="${pageContext.request.contextPath}/admin/public-todo"
-       style="color:#ffd07f; font-weight:600; text-decoration:none;">공용 미션 관리</a>
-  </nav>
+       style="color:#ffd07f; font-weight:600; text-decoration:none;">
+      공용 미션 관리
+    </a>
+  </c:if>
+</nav>
+
 
 
   <!-- ===== 상단 고정 헤더 ===== -->

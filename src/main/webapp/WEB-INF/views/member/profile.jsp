@@ -255,7 +255,7 @@ input, select {
   </form>
 </main>
 
-<!-- 이미지 미리보기 스크립트 추가11112222 -->
+<!-- 이미지 미리보기 스크립트 추가1111222233 -->
 <script>
 function previewImage(event) {
   const file = event.target.files[0];
