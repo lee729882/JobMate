@@ -49,4 +49,16 @@
     WHERE member_id = #{memberId}
   </select>
 
+	<update id="updateProfile">
+	    UPDATE MEMBER
+	    SET
+	        EMAIL = #{email},
+	        PHONE = #{phone},
+	        CAREER_TYPE = #{careerType},
+	        REGION = #{region},
+	        CERTIFICATIONS = #{certifications},
+	        NAME = #{name},
+	        PROFILE_IMAGE = #{profileImage}
+	    WHERE ID = #{id}
+	</update>
 </mapper>

@@ -261,8 +261,11 @@
       <a href="${pageContext.request.contextPath}/member/dashboard" class="active">대시보드</a>
       <a href="${pageContext.request.contextPath}/member/todo">To-Do</a>
       <a href="${pageContext.request.contextPath}/member/interview">면접 AI</a>
-            <a href="${pageContext.request.contextPath}/member/community">취업 커뮤니티</a>
+      <a href="${pageContext.request.contextPath}/member/community/select">취업 커뮤니티</a>
+      
+
       <a href="${pageContext.request.contextPath}/member/profile">My Profile</a>
+
     </nav>
   </div>
 

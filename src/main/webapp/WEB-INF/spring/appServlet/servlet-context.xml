@@ -8,17 +8,22 @@
         http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
 
+    <!-- @Controller 활성화 -->
     <annotation-driven />
 
+    <!-- 🔥 정적 리소스 매핑 (중복 제거 후 1개만 유지) -->
     <resources mapping="/resources/**" location="/resources/" />
-    <resources mapping="/static/**"   location="/static/" />
 
-    <!-- ★ 단일 리졸버: /WEB-INF/views/ -->
+    <!-- (필요하면 사용) 정적 파일 assets -->
+    <resources mapping="/static/**" location="/static/" />
+
+    <!-- 뷰 리졸버 -->
     <beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
         <beans:property name="prefix" value="/WEB-INF/views/"/>
         <beans:property name="suffix" value=".jsp"/>
     </beans:bean>
 
-    <!-- ★ 컨트롤러/서비스 전체 스캔 -->
+    <!-- 컴포넌트 스캔 -->
     <context:component-scan base-package="com.jobmate" />
+
 </beans:beans>
