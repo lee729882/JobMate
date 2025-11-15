@@ -237,21 +237,6 @@ input, select {
 <main>
   <h1>My Profile</h1>
 
-  <!-- 기본 이미지 -->
-  <c:set var="defaultProfile" value="${pageContext.request.contextPath}/resources/img/default_profile.png" />
-
-  <!-- 실제 사용할 프로필 이미지 -->
-  <c:choose>
-      <c:when test="${not empty member.profileImage}">
-          <!-- DB에 저장된 경로 사용 -->
-          <c:set var="profileUrl" value="${pageContext.request.contextPath}${member.profileImage}" />
-      </c:when>
-      <c:otherwise>
-          <c:set var="profileUrl" value="${defaultProfile}" />
-      </c:otherwise>
-  </c:choose>
-
-  <!-- 프로필 수정 폼 -->
   <form action="${pageContext.request.contextPath}/member/profile/update"
         method="post"
         enctype="multipart/form-data">
@@ -262,7 +247,20 @@ input, select {
     <div class="profile-upload-container">
       <div class="profile-img-wrapper">
 
-        <img src="${profileUrl}" alt="profile" class="profile-img" id="profilePreview" />
+        <!-- 🔥 Base64 출력 방식 -->
+        <c:choose>
+            <c:when test="${not empty profileBase64}">
+                <img id="profilePreview"
+                     class="profile-img"
+                     src="data:image/png;base64,${profileBase64}">
+            </c:when>
+            <c:otherwise>
+                <!-- 기본 이미지 (Base64 없는 경우 로컬 기본이미지) -->
+                <img id="profilePreview"
+                     class="profile-img"
+                     src="${pageContext.request.contextPath}/resources/img/default_profile.png">
+            </c:otherwise>
+        </c:choose>
 
         <label for="profileImageFile" class="camera-icon-overlay"></label>
       </div>
@@ -283,6 +281,7 @@ input, select {
       </div>
     </div>
 
+    <!-- 아래 기본 정보 폼들은 동일 -->
     <label>이름</label>
     <input type="text" name="name" value="${member.name}" required />
 

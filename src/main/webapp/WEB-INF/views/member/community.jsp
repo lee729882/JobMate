@@ -55,7 +55,7 @@
             object-fit: cover;
         }
 
-        /* 🟣 게시글 피드 카드 */
+        /* 🟣 게시글 카드 */
         .post-card {
             background: rgba(20, 30, 40, 0.7);
             border: 1px solid #34d399;
@@ -65,7 +65,6 @@
             box-shadow: 0px 4px 20px rgba(0,0,0,0.3);
         }
 
-        /* 프로필 + 작성자 정보 */
         .post-header {
             display: flex;
             align-items: center;
@@ -108,11 +107,6 @@
             font-weight: bold;
         }
 
-        .delete-btn:hover {
-            text-decoration: underline;
-        }
-
-        /* ✏ 글쓰기 */
         .write-form {
             margin-top: 50px;
             padding: 20px;
@@ -165,10 +159,10 @@
 
     <h1>${category} 커뮤니티</h1>
 
-    <!-- 🔥 로그인 사용자 정보 -->
-    <c:if test="${not empty loginUser}">
+    <!-- 🔥 로그인 사용자 정보 (Base64 버전) -->
+    <c:if test="${not empty profileBase64}">
         <div class="user-info-box">
-            <img src="${pageContext.request.contextPath}${loginUser.profileImage}">
+            <img src="data:image/png;base64,${profileBase64}">
             <div>
                 <b>${loginUser.name}</b> (${loginUser.username})<br>
                 <small>${loginUser.email}</small>
@@ -182,19 +176,15 @@
 
         <div class="post-card">
 
-            <!-- 헤더(프로필 + 작성자) -->
             <div class="post-header">
-                <img src="${pageContext.request.contextPath}${post.writerProfile}">
+                <img src="${post.writerProfileBase64}">
                 <div class="post-writer">${post.writer}</div>
             </div>
 
-            <!-- 제목 -->
             <div class="post-title">${post.title}</div>
 
-            <!-- 내용 -->
             <div class="post-content">${post.content}</div>
 
-            <!-- 삭제 -->
             <a href="${pageContext.request.contextPath}/community/${category}/${post.id}/delete"
                onclick="return confirm('정말 삭제하시겠습니까?')"
                class="delete-btn">
@@ -216,13 +206,22 @@
             <textarea name="content" rows="5" placeholder="내용" required></textarea>
 
             <div class="writer-box">
-                <img src="${pageContext.request.contextPath}${loginUser.profileImage}">
+                <img src="data:image/png;base64,${profileBase64}">
                 <span>${loginUser.username}</span>
             </div>
 
             <button type="submit">작성하기</button>
         </form>
     </div>
+
+    <!-- 메인 화면 이동 버튼 -->
+    <a href="${pageContext.request.contextPath}/member/dashboard"
+       style="display:block; text-align:center; margin-top:15px;
+              padding:12px; border-radius:12px;
+              background:#1f2937; color:white; font-weight:700;
+              text-decoration:none;">
+        메인화면으로
+    </a>
 
 </div>
 

@@ -37,6 +37,9 @@ public class MemberService {
         m.setRegion(dto.getRegion());
         m.setCertifications(dto.getCertifications());
 
+        // 가입시 프로필 이미지는 없으므로 null (BLOB)
+        m.setProfileImageBlob(null);
+
         memberMapper.insertMember(m);
     }
 
@@ -58,8 +61,7 @@ public class MemberService {
     }
 
     /**
-     * 🔥 프로필 조회(ID 기준)
-     *     ※ 비밀번호는 숨김 처리
+     * 🔥 회원 조회 (ID 기준)
      */
     public Member findById(Long id) {
         Member m = memberMapper.findById(id);
@@ -70,7 +72,7 @@ public class MemberService {
     }
 
     /**
-     * 🔥 프로필 업데이트 (이름 / 이메일 / 전화번호 / 경력 / 지역 / 자격증)
+     * 🔥 프로필 업데이트 (이름/이메일/전화번호/경력/지역/자격증/프로필이미지 BLOB)
      */
     public void updateProfile(Member member) {
 
@@ -86,9 +88,7 @@ public class MemberService {
             throw new DuplicateEmailException("이미 사용 중인 이메일입니다.");
         }
 
-        // 3) username은 변경 불가이므로 검증 없음
-
-        // 4) 업데이트 실행
+        // 3) 프로필 업데이트
         memberMapper.updateProfile(member);
     }
 }

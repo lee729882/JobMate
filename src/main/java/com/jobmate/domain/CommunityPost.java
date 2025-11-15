@@ -11,9 +11,11 @@ public class CommunityPost {
     private String content;
     private String writer;
 
-    // DB의 writer_profile 컬럼 → 정확히 매핑됨
-    private String writerProfile;
+    // DB BLOB
+    private byte[] writerProfileBlob;
 
-    // DB의 created_at 컬럼 → 정확히 매핑됨
+    // JSP에서 쓸 Base64 URL
+    private String writerProfileBase64;
+
     private String createdAt;
 }

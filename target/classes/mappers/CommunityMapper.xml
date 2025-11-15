@@ -12,9 +12,13 @@
         <result property="title" column="title"/>
         <result property="content" column="content"/>
         <result property="writer" column="writer"/>
-        <result property="writerProfile" column="writer_profile"/>
+
+        <!-- 🔥 BLOB → writerProfileBlob -->
+        <result property="writerProfileBlob" column="writer_profile_blob" jdbcType="BLOB"/>
+
         <result property="createdAt" column="created_at"/>
     </resultMap>
+
 
     <!-- 카테고리 별 조회 -->
     <select id="findByCategory" parameterType="string" resultMap="CommunityPostMap">
@@ -31,17 +35,17 @@
         WHERE ID = #{id}
     </select>
 
-    <!-- 글 저장 (🔥 writerProfile null 방지 → jdbcType=VARCHAR 추가) -->
-    <insert id="insertPost">
+    <!-- 글 저장 -->
+    <insert id="insertPost" parameterType="com.jobmate.domain.CommunityPost">
         INSERT INTO COMMUNITY_POST
-        (id, category, title, content, writer, writer_profile)
+        (id, category, title, content, writer, writer_profile_blob)
         VALUES (
             COMMUNITY_POST_SEQ.NEXTVAL,
             #{category},
             #{title},
             #{content},
             #{writer},
-            #{writerProfile, jdbcType=VARCHAR}
+            #{writerProfileBlob, jdbcType=BLOB}
         )
     </insert>
 
