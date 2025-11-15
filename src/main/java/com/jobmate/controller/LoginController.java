@@ -11,6 +11,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpServletRequest;
+
 import java.io.File;
 
 @Controller
@@ -70,11 +72,12 @@ public class LoginController {
         return "member/profile";
     }
 
-    /** 프로필 업데이트 */
+    /** 프로필 업데이트 (⚡ 완전히 수정된 버전) */
     @PostMapping("/profile/update")
     public String updateProfile(@RequestParam(value = "profileImageFile", required = false) MultipartFile profileImageFile,
                                 Member member,
                                 HttpSession session,
+                                HttpServletRequest request,
                                 RedirectAttributes ra) {
 
         Member loginMember = (Member) session.getAttribute("loginMember");
@@ -83,34 +86,31 @@ public class LoginController {
             return "redirect:/member/login";
         }
 
-        // ============================================
-        // ★ 필수: ID / username / password 유지
-        // ============================================
+        // --- 기존 member 정보 유지 ---
         member.setId(loginMember.getId());
         member.setUsername(loginMember.getUsername());
         member.setPassword(loginMember.getPassword());
 
-        // ============================================
-        // 🔥 프로필 이미지 업로드 처리
-        // ============================================
+        // --- 프로필 이미지 업로드 처리 ---
         if (profileImageFile != null && !profileImageFile.isEmpty()) {
             try {
-                // 실제 서버 경로
-                String uploadDir = session.getServletContext().getRealPath("/resources/profile/");
+                // Tomcat 실제 작동 경로 (정답)
+                String uploadDir = request.getServletContext().getRealPath("/resources/profile/");
+                System.out.println("UPLOAD DIR = " + uploadDir);
+
                 File dir = new File(uploadDir);
                 if (!dir.exists()) dir.mkdirs();
 
-                // 저장 파일명
                 String fileName = "profile_" + loginMember.getId() + "_" +
                         System.currentTimeMillis() + "_" +
                         profileImageFile.getOriginalFilename();
 
-                File saveFile = new File(uploadDir, fileName);
+                File saveFile = new File(dir, fileName);
 
-                // 파일 저장
+                // 실제 파일 저장
                 profileImageFile.transferTo(saveFile);
 
-                // DB에는 상대경로 저장 (JSP에서 불러올 수 있는 경로)
+                // DB에는 URL 형태로 저장
                 String webPath = "/resources/profile/" + fileName;
                 member.setProfileImage(webPath);
 
@@ -119,18 +119,14 @@ public class LoginController {
                 ra.addFlashAttribute("msg", "프로필 이미지 저장 중 오류 발생!");
             }
         } else {
-            // 새 이미지 업로드 안 했으면 기존 이미지 그대로 사용
+            // 새 업로드 없으면 기존 이미지 유지
             member.setProfileImage(loginMember.getProfileImage());
         }
 
-        // ============================================
-        // 🔥 DB 저장
-        // ============================================
+        // --- DB 업데이트 ---
         memberService.updateProfile(member);
 
-        // ============================================
-        // 🔥 수정 내용 다시 세션에 반영
-        // ============================================
+        // --- 세션 갱신 ---
         Member updated = memberService.findById(member.getId());
         session.setAttribute("loginMember", updated);
 

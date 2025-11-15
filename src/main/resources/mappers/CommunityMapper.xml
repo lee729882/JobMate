@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jobmate.mapper.CommunityMapper">
+
+    <!-- 매핑 -->
+    <resultMap id="CommunityPostMap" type="com.jobmate.domain.CommunityPost">
+        <id property="id" column="id"/>
+        <result property="category" column="category"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="writer" column="writer"/>
+        <result property="writerProfile" column="writer_profile"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <!-- 카테고리 별 조회 -->
+    <select id="findByCategory" parameterType="string" resultMap="CommunityPostMap">
+        SELECT *
+        FROM COMMUNITY_POST
+        WHERE CATEGORY = #{category}
+        ORDER BY ID DESC
+    </select>
+
+    <!-- 단건 조회 -->
+    <select id="findById" parameterType="long" resultMap="CommunityPostMap">
+        SELECT *
+        FROM COMMUNITY_POST
+        WHERE ID = #{id}
+    </select>
+
+    <!-- 글 저장 (🔥 writerProfile null 방지 → jdbcType=VARCHAR 추가) -->
+    <insert id="insertPost">
+        INSERT INTO COMMUNITY_POST
+        (id, category, title, content, writer, writer_profile)
+        VALUES (
+            COMMUNITY_POST_SEQ.NEXTVAL,
+            #{category},
+            #{title},
+            #{content},
+            #{writer},
+            #{writerProfile, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <!-- 삭제 -->
+    <delete id="deletePost" parameterType="long">
+        DELETE FROM COMMUNITY_POST
+        WHERE ID = #{id}
+    </delete>
+
+</mapper>

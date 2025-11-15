@@ -237,14 +237,19 @@ input, select {
 <main>
   <h1>My Profile</h1>
 
-  <!-- 기본 프로필 이미지 -->
+  <!-- 기본 이미지 -->
   <c:set var="defaultProfile" value="${pageContext.request.contextPath}/resources/img/default_profile.png" />
 
-  <!-- 실제 사용할 프로필 URL 계산 -->
-  <c:set var="profileUrl"
-         value="${empty member.profileImage
-                 ? defaultProfile
-                 : pageContext.request.contextPath.concat(member.profileImage)}" />
+  <!-- 실제 사용할 프로필 이미지 -->
+  <c:choose>
+      <c:when test="${not empty member.profileImage}">
+          <!-- DB에 저장된 경로 사용 -->
+          <c:set var="profileUrl" value="${pageContext.request.contextPath}${member.profileImage}" />
+      </c:when>
+      <c:otherwise>
+          <c:set var="profileUrl" value="${defaultProfile}" />
+      </c:otherwise>
+  </c:choose>
 
   <!-- 프로필 수정 폼 -->
   <form action="${pageContext.request.contextPath}/member/profile/update"
@@ -253,38 +258,26 @@ input, select {
 
     <input type="hidden" name="id" value="${member.id}" />
 
-    <!-- 프로필 이미지 업로드 영역 -->
+    <!-- 프로필 이미지 영역 -->
     <div class="profile-upload-container">
       <div class="profile-img-wrapper">
-        <c:choose>
-          <c:when test="${empty member.profileImage}">
-            <!-- 프로필 이미지가 없을 때: 이니셜 또는 아이콘 표시 -->
-            <div class="default-avatar" id="defaultAvatar">
-              <span class="default-avatar-icon">👤</span>
-            </div>
-            <img src="${profileUrl}" alt="profile" class="profile-img" id="profilePreview" style="display:none;" />
-          </c:when>
-          <c:otherwise>
-            <!-- 프로필 이미지가 있을 때 -->
-            <div class="default-avatar" id="defaultAvatar" style="display:none;">
-              <span class="default-avatar-icon">👤</span>
-            </div>
-            <img src="${profileUrl}" alt="profile" class="profile-img" id="profilePreview" />
-          </c:otherwise>
-        </c:choose>
+
+        <img src="${profileUrl}" alt="profile" class="profile-img" id="profilePreview" />
+
         <label for="profileImageFile" class="camera-icon-overlay"></label>
       </div>
-      
+
       <div class="file-upload-wrapper">
         <label for="profileImageFile" class="file-upload-label">
           <span class="upload-icon">📸</span>
           <div class="upload-text">프로필 사진 변경</div>
           <div class="upload-hint">클릭하거나 이미지를 드래그하세요</div>
         </label>
-        <input type="file" 
+
+        <input type="file"
                id="profileImageFile"
-               name="profileImageFile" 
-               accept="image/*" 
+               name="profileImageFile"
+               accept="image/*"
                class="file-upload-input"
                onchange="previewImage(event)" />
       </div>
@@ -327,21 +320,16 @@ input, select {
   </form>
 </main>
 
-<!-- 이미지 미리보기 스크립트11 -->
 <script>
 function previewImage(event) {
-  const file = event.target.files[0];
-  if (file) {
+    const file = event.target.files[0];
+    if (!file) return;
+
     const reader = new FileReader();
-    reader.onload = function(e) {
-      // 기본 아바타 숨기고 이미지 표시
-      document.getElementById('defaultAvatar').style.display = 'none';
-      const profileImg = document.getElementById('profilePreview');
-      profileImg.style.display = 'block';
-      profileImg.src = e.target.result;
+    reader.onload = e => {
+        document.getElementById("profilePreview").src = e.target.result;
     };
     reader.readAsDataURL(file);
-  }
 }
 </script>
 

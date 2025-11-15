@@ -622,30 +622,11 @@
             closeCommunity();
         }
 
-        function goToCommunity(communityId) {
-            // TODO: 실제 커뮤니티 페이지 경로로 이동
-            // 예: window.location.href = '/community/' + communityId;
-            
-            // 임시로 빈 URL - 나중에 실제 경로로 변경
-            const communityUrls = {
-                'medical': '',
-                'finance': '',
-                'developer': '',
-                'public': '',
-                'law': '',
-                'engineering': '',
-                'marketing': '',
-                'startup': ''
-            };
-            
-            // URL이 비어있으면 알림 표시
-            if (!communityUrls[communityId]) {
-                alert(communityId + ' 커뮤니티 페이지로 이동합니다. (URL 설정 필요)');
-                // window.location.href = communityUrls[communityId];
-            } else {
-                window.location.href = communityUrls[communityId];
-            }
+        function goToCommunity(category) {
+            window.location.href = "/controller/community/" + category;
         }
+
+
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {

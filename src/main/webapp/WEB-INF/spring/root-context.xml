@@ -1,17 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:tx="http://www.springframework.org/schema/tx"
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:mybatis-spring="http://mybatis.org/schema/mybatis-spring"
        xsi:schemaLocation="
-         http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
-         http://www.springframework.org/schema/tx https://www.springframework.org/schema/tx/spring-tx.xsd
-         http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd
-         http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring-1.2.xsd">
+            http://www.springframework.org/schema/beans 
+            https://www.springframework.org/schema/beans/spring-beans.xsd
+            http://www.springframework.org/schema/tx 
+            https://www.springframework.org/schema/tx/spring-tx.xsd
+            http://www.springframework.org/schema/context 
+            https://www.springframework.org/schema/context/spring-context.xsd
+            http://mybatis.org/schema/mybatis-spring 
+            http://mybatis.org/schema/mybatis-spring-1.2.xsd">
 
     <!-- ========================= -->
-    <!--  HikariCP (DB 연결) 설정  -->
+    <!-- HikariCP (DB 연결) 설정 -->
     <!-- ========================= -->
     <bean id="hikariConfig" class="com.zaxxer.hikari.HikariConfig">
         <property name="driverClassName" value="net.sf.log4jdbc.sql.jdbcapi.DriverSpy"/>
@@ -25,11 +30,10 @@
     </bean>
 
     <!-- ========================= -->
-    <!--  MyBatis 설정              -->
+    <!-- MyBatis 설정              -->
     <!-- ========================= -->
     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
         <property name="dataSource" ref="dataSource"/>
-        <!-- Mapper XML 경로 -->
         <property name="mapperLocations" value="classpath:mappers/*.xml"/>
         <property name="configuration">
             <bean class="org.apache.ibatis.session.Configuration">
@@ -44,7 +48,7 @@
     </bean>
 
     <!-- ========================= -->
-    <!--  트랜잭션 설정            -->
+    <!-- 트랜잭션 설정             -->
     <!-- ========================= -->
     <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
         <property name="dataSource" ref="dataSource"/>
@@ -58,21 +62,21 @@
     <bean id="multipartResolver"
           class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
 
-        <!-- 파일 전체 요청 크기 (200MB) -->
-        <property name="maxUploadSize" value="209715200" />
+        <!-- 요청 전체 200MB -->
+        <property name="maxUploadSize" value="209715200"/>
 
-        <!-- 파일 1개 크기 제한 (50MB) -->
-        <property name="maxUploadSizePerFile" value="52428800" />
+        <!-- 파일 1개 50MB -->
+        <property name="maxUploadSizePerFile" value="52428800"/>
 
-        <!-- 업로드 시 메모리 사용 임계값 -->
-        <property name="maxInMemorySize" value="0" />
+        <!-- 메모리 버퍼 -->
+        <property name="maxInMemorySize" value="0"/>
 
         <!-- 임시 저장 경로 -->
-        <property name="uploadTempDir" value="/tmp" />
+        <property name="uploadTempDir" value="file:/tmp"/>
     </bean>
 
     <!-- ========================= -->
-    <!-- @Service, @Controller 스캔 -->
+    <!-- @Controller, @Service 스캔 -->
     <!-- ========================= -->
     <context:component-scan base-package="com.jobmate"/>
 

@@ -1,26 +1,74 @@
 package com.jobmate.controller;
 
+import com.jobmate.domain.Member;
+import com.jobmate.service.CommunityService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.ModelAndView;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpSession;
 
 @Controller
-@RequestMapping("/member/community")
+@RequestMapping("/community")
 public class CommunityController {
 
-    // ✅ 커뮤니티 선택 페이지 (의료, 금융, 개발자, 공기업 선택)
-    @GetMapping("/select")
-    public String selectCommunity() {
-        return "member/community_select";
+    @Autowired
+    private CommunityService communityService;
+
+    @GetMapping("/{category}")
+    public String communityPage(
+            @PathVariable String category,
+            Model model,
+            HttpSession session) {
+
+        // ✅ loginMember로 읽기
+        Member loginUser = (Member) session.getAttribute("loginMember");
+
+        model.addAttribute("loginUser", loginUser);
+        model.addAttribute("category", category);
+        model.addAttribute("posts", communityService.getPostsByCategory(category));
+
+        return "member/community";
     }
 
-    // ✅ 각 카테고리별 커뮤니티 게시판 페이지
-    @GetMapping("/{category}")
-    public ModelAndView communityPage(@PathVariable String category) {
-        ModelAndView mv = new ModelAndView("member/community_board");
-        mv.addObject("category", category);
-        return mv;
+    @PostMapping("/{category}/write")
+    public String writePost(
+            @PathVariable String category,
+            @RequestParam String title,
+            @RequestParam String content,
+            HttpSession session) {
+
+        // ✅ loginMember로 읽기
+        Member loginUser = (Member) session.getAttribute("loginMember");
+
+        if (loginUser == null) {
+            return "redirect:/member/login";
+        }
+
+        String writer = loginUser.getUsername();
+        String profileImage = loginUser.getProfileImage();
+
+        communityService.savePost(category, title, content, writer, profileImage);
+
+        return "redirect:/community/" + category;
+    }
+
+    @GetMapping("/{category}/{id}/delete")
+    public String deletePost(
+            @PathVariable String category,
+            @PathVariable Long id,
+            HttpSession session) {
+
+        // ✅ loginMember로 읽기
+        Member loginUser = (Member) session.getAttribute("loginMember");
+
+        if (loginUser == null) {
+            return "redirect:/member/login";
+        }
+
+        communityService.deletePost(id);
+
+        return "redirect:/community/" + category;
     }
 }
