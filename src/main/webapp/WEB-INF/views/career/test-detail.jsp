@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <!DOCTYPE html>
 <html lang="ko">
@@ -27,7 +28,7 @@
             flex-direction:column;
         }
 
-        /* ===== HEADER (대시보드 동일) ===== */
+        /* HEADER */
         header {
             display:flex; align-items:center; justify-content:space-between;
             padding:16px 40px;
@@ -35,6 +36,7 @@
             backdrop-filter:blur(10px);
             border-bottom:1px solid rgba(255,255,255,.1);
         }
+
         .left-nav { display:flex; align-items:center; gap:40px; }
         .logo { font-size:22px; font-weight:800; display:flex; align-items:center; gap:10px; cursor:pointer; }
         .logo .mark {
@@ -43,16 +45,18 @@
             box-shadow:0 0 20px #22d3ee77;
         }
         nav.menu { display:flex; gap:30px; }
+
         .menu a { color:#cbd5e1; text-decoration:none; font-size:15px; }
         .menu a:hover, .menu a.active { color:#22d3ee; }
 
         .user-info { display:flex; gap:16px; font-size:14px; color:#e6eefc; align-items:center; }
+
         .logout-btn {
             background:#ef4444; color:white; border:none;
             padding:6px 12px; border-radius:8px; cursor:pointer;
         }
 
-        /* ===== MAIN ===== */
+        /* MAIN */
         main {
             flex:1; display:flex; flex-direction:column;
             align-items:center; padding:60px 20px;
@@ -72,7 +76,7 @@
             line-height:1.6;
         }
 
-        /* ===== QUESTION CARD ===== */
+        /* QUESTION CARD */
         .question-card {
             width:min(90%, 900px);
             background:rgba(10,20,40,0.55);
@@ -84,6 +88,7 @@
             box-shadow:0 10px 32px rgba(0,0,0,0.5);
             transition:0.25s;
         }
+
         .question-card:hover {
             transform:translateY(-4px);
             box-shadow:0 14px 36px rgba(0,0,0,0.6);
@@ -107,6 +112,7 @@
             gap:10px;
             transition:0.2s;
         }
+
         .choice-box:hover { background:rgba(255,255,255,0.15); }
 
         .choice-text { font-size:15px; color:#e2e8f0; }
@@ -116,12 +122,12 @@
             transform:scale(1.35);
         }
 
-        /* ===== PAGE BUTTONS ===== */
         .page-nav {
             display:flex;
             gap:12px;
             margin-top:25px;
         }
+
         .page-btn {
             background:rgba(255,255,255,0.15);
             border:1px solid rgba(255,255,255,0.3);
@@ -133,7 +139,6 @@
             font-weight:600;
             transition:.2s;
         }
-        .page-btn:hover { background:rgba(255,255,255,0.3); }
 
         .submit-btn {
             background:var(--accent);
@@ -154,6 +159,20 @@
             color:#e2e8f0;
             opacity:0.8;
         }
+        select {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 10px;
+    padding: 10px 14px;
+}
+
+/* 옵션 펼쳤을 때 배경/글자 색 지정 */
+select option {
+    background: #1e293b !important;   /* 네이비 */
+    color: #f8fafc !important;        /* 하얀색 */
+}
+        
     </style>
 </head>
 
@@ -192,70 +211,123 @@
 <!-- MAIN -->
 <main>
 
-    <h1>🧭 ${test.qnm}</h1>
-    <p class="summary">${test.summary}</p>
 
-    <!-- 페이지 저장용 -->
-    <form action="${pageContext.request.contextPath}/controller/career/tests/${test.qno}/save" method="post">
 
-        <input type="hidden" name="page" value="${page}" />
 
-        <c:forEach var="q" items="${questions}">
-            <div class="question-card">
+<h1>🧭 ${test.qnm}</h1>
+<p class="summary">${test.summary}</p>
 
-                <div class="question-title">
-                    ${q.no}. ${q.text}
-                </div>
+<!-- 저장 폼 -->
+<form action="${pageContext.request.contextPath}/controller/career/tests/${test.qno}/save" method="post">
 
-                <c:forEach var="c" items="${q.choices}">
-                    <label class="choice-box">
-                        <input type="radio"
-                               name="answer_${q.no}"
-                               value="${c.val}"
-                               <c:if test="${answers['answer_' += q.no] == c.val}">checked</c:if>
-                        />
-                        <div class="choice-text">${c.text}</div>
-                    </label>
-                </c:forEach>
+    <input type="hidden" name="page" value="${page}" />
 
+    <c:forEach var="q" items="${questions}">
+
+        <div class="question-card">
+
+            <div class="question-title">
+                ${q.no}. ${q.text}
             </div>
-        </c:forEach>
 
-        <!-- 페이지 네비게이션 -->
-        <div class="page-nav">
+            <c:set var="prefix" value="answer_" />
 
-            <!-- 이전 페이지 -->
-            <c:if test="${page > 1}">
-                <button class="page-btn"
-                        formaction="${pageContext.request.contextPath}/controller/career/tests/${test.qno}/save?page=${page - 1}">
-                    ◀ 이전
-                </button>
-            </c:if>
+            <c:forEach var="c" items="${q.choices}">
+                <c:set var="key" value="${prefix}${q.no}" />
 
-            <!-- 다음 페이지 -->
-            <c:if test="${page < maxPage}">
-                <button class="page-btn"
-                        formaction="${pageContext.request.contextPath}/controller/career/tests/${test.qno}/save?page=${page + 1}">
-                    다음 ▶
-                </button>
-            </c:if>
+                <label class="choice-box">
+                    <input type="radio"
+                           name="answer_${q.no}"
+                           value="${c.val}"
+                           <c:if test="${answers[key] eq c.val}">checked</c:if>
+                    />
+                    <div class="choice-text">${c.text}</div>
+                </label>
+            </c:forEach>
 
         </div>
 
-    </form>
+    </c:forEach>
 
-    <!-- 마지막 페이지에서만 제출 버튼 -->
-    <c:if test="${page == maxPage}">
-        <form action="${pageContext.request.contextPath}/controller/career/tests/submit" method="post">
-            <button type="submit" class="submit-btn">
-                검사 결과 확인 →
+    <div class="page-nav">
+        <c:if test="${page > 1}">
+            <button class="page-btn"
+                    formaction="${pageContext.request.contextPath}/controller/career/tests/${test.qno}/save?page=${page - 1}">
+                ◀ 이전
             </button>
-        </form>
-    </c:if>
+        </c:if>
+
+        <c:if test="${page < maxPage}">
+            <button class="page-btn"
+                    formaction="${pageContext.request.contextPath}/controller/career/tests/${test.qno}/save?page=${page + 1}">
+                다음 ▶
+            </button>
+        </c:if>
+    </div>
+
+</form>
+<!-- 마지막 페이지에서만 나타남 -->
+<c:if test="${page == maxPage}">
+<div class="question-card" style="margin-top:20px;">
+
+    <div class="question-title" style="font-size:18px; margin-bottom:15px;">
+        📌 검사 정보 입력
+    </div>
+
+    <div style="display:flex; justify-content:center; gap:30px;">
+
+        <!-- 성별 -->
+        <div>
+            <label style="font-size:16px; font-weight:600;">성별</label><br>
+            <select name="gender" id="gender"
+                    style="margin-top:8px; padding:10px 14px; width:150px;
+                           border-radius:10px; border:1px solid rgba(255,255,255,0.25);
+                           background:rgba(255,255,255,0.1); color:white;">
+                <option value="100323">남자</option>
+                <option value="100324">여자</option>
+            </select>
+        </div>
+
+        <!-- 학년 -->
+        <div>
+            <label style="font-size:16px; font-weight:600;">학년</label><br>
+            <select name="grade" id="grade"
+                    style="margin-top:8px; padding:10px 14px; width:150px;
+                           border-radius:10px; border:1px solid rgba(255,255,255,0.25);
+                           background:rgba(255,255,255,0.1); color:white;">
+                <option value="1">1학년</option>
+                <option value="2">2학년</option>
+                <option value="3">3학년</option>
+                <option value="4">4학년</option>
+            </select>
+        </div>
+
+    </div>
+</div>
+</c:if>
+<!-- 마지막 페이지 제출 버튼 -->
+<c:if test="${page == maxPage}">
+    <form id="submitForm" action="${pageContext.request.contextPath}/controller/career/tests/submit" method="post">
+        <input type="hidden" name="gender" id="genderField">
+        <input type="hidden" name="grade" id="gradeField">
+
+        <button type="submit" class="submit-btn" onclick="copyUserInfo()">
+            검사 결과 확인 →
+        </button>
+    </form>
+</c:if>
+
+<script>
+function copyUserInfo() {
+    document.getElementById("genderField").value =
+        document.getElementById("gender").value;
+    document.getElementById("gradeField").value =
+        document.getElementById("grade").value;
+}
+</script>
 
 </main>
 
-<!-- FOOTER -->
 <footer>
     © 2025 JobMate. All rights reserved.
 </footer>

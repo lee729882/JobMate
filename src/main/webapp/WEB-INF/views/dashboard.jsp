@@ -521,14 +521,16 @@
     </div>
 </div>
 
-    <!-- 카드 2 (전체폭 2행) -->
-    <div class="card r-card-full" onclick="location.href='${pageContext.request.contextPath}/member/community'">
+<!-- 카드 2 (전체폭 2행) -->
+<div class="card r-card-full" 
+     onclick="location.href='${pageContext.request.contextPath}/member/community/select'">
     <div class="r-icon-full">📣</div>
     <div class="r-txt-full">
         <div class="r-title-full">취업 커뮤니티</div>
         <div class="r-sub-full">인기 게시글 확인하기</div>
     </div>
 </div>
+
 
     <!-- 카드 3 (왼쪽) -->
 <div class="card r-box" onclick="location.href='${pageContext.request.contextPath}/member/todo'">

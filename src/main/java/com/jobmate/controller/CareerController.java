@@ -5,9 +5,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import javax.servlet.http.*;
 import java.util.*;
 
 @Controller
@@ -17,15 +17,26 @@ public class CareerController {
 
     private final CareerService service;
 
-    /** 📌 검사 목록 */
+
+    /** 검사 목록 페이지 (API 호출 없음 → 직접 정의) */
     @GetMapping
     public String list(Model model) {
-        List<Map<String, Object>> tests = service.getTestList();
+
+        List<Map<String, Object>> tests = new ArrayList<>();
+
+        Map<String, Object> t = new HashMap<>();
+        t.put("id", 6);
+        t.put("title", "직업가치관검사 (대학생/일반)");
+        t.put("desc", "대학생·취준생용 직업 추천 검사");
+        tests.add(t);
+
         model.addAttribute("tests", tests);
+
         return "career/tests";
     }
 
-    /** 📌 상세(페이지 분할) */
+
+    /** 문항 페이지 */
     @GetMapping("/{qno}")
     public String detail(
             @PathVariable int qno,
@@ -34,86 +45,130 @@ public class CareerController {
             Model model
     ) {
 
-        // 전체 테스트 정보
         Map<String, Object> test = service.getQuestions(qno);
-        List<Map<String, Object>> questions = (List<Map<String, Object>>) test.get("questions");
 
-        int pageSize = 10;  // 🔥 한 페이지에 10문항
+        List<Map<String, Object>> questions =
+                (List<Map<String, Object>>) test.get("questions");
+
+        int pageSize = 10;
         int total = questions.size();
         int maxPage = (int) Math.ceil(total / (double) pageSize);
 
         int start = (page - 1) * pageSize;
         int end = Math.min(start + pageSize, total);
 
-        // 🔥 현재 페이지 문항만 subList 로 잘라서 전달
         List<Map<String, Object>> pageQuestions = questions.subList(start, end);
 
-        // 🔥 기존 응답 가져오기(세션)
-        Map<String, String> savedAnswers = 
+        /** 🔥🔥🔥 [추가됨] — CareerNet 제출 위해 qitemNo 전체 리스트 저장 */
+        if (session.getAttribute("qitemNos") == null) {
+            List<Integer> qitemNos = new ArrayList<>();
+            for (Map<String, Object> q : questions) {
+                qitemNos.add((Integer) q.get("no"));  // qitemNo 저장
+            }
+            session.setAttribute("qitemNos", qitemNos);
+        }
+        /** 🔥🔥🔥 끝 */
+
+        Map<String, String> saved =
                 (Map<String, String>) session.getAttribute("testAnswers");
-        if (savedAnswers == null) savedAnswers = new HashMap<>();
+
+        if (saved == null) saved = new HashMap<>();
 
         model.addAttribute("test", test);
         model.addAttribute("questions", pageQuestions);
         model.addAttribute("page", page);
         model.addAttribute("maxPage", maxPage);
-
-        model.addAttribute("answers", savedAnswers); // 🔥 JSP에서 라디오 pre-check
+        model.addAttribute("answers", saved);
 
         return "career/test-detail";
     }
 
-    /** 📌 다음 페이지 이동 시 답변 저장 (세션) */
-    @RequestMapping("/{qno}/save")
-    public String saveAnswers(
+
+    /** 답변 저장 */
+    @PostMapping("/{qno}/save")
+    public String save(
             @PathVariable int qno,
             @RequestParam int page,
             HttpServletRequest req,
             HttpSession session
     ) {
 
-        Map<String, String> saved = (Map<String, String>) session.getAttribute("testAnswers");
-        if (saved == null) {
-            saved = new HashMap<>();
-        }
+    	Map<String, String> saved =
+    	        (Map<String, String>) session.getAttribute("testAnswers");
 
-        // 🔥 람다 제거 → 일반 for문 (오류 완전 해결)
-        for (Map.Entry<String, String[]> entry : req.getParameterMap().entrySet()) {
+    	if (saved == null) saved = new HashMap<>();
 
-            String k = entry.getKey();
-            String[] v = entry.getValue();
+    	for (Map.Entry<String, String[]> entry : req.getParameterMap().entrySet()) {
 
-            if (k.startsWith("answer_")) {
+    	    String k = entry.getKey();
+    	    String[] v = entry.getValue();
 
-                String value = (v != null && v.length > 0) ? v[0] : "";
+    	    if (!k.startsWith("answer_")) continue;
 
-                saved.put(k, value);
-            }
-        }
+    	    if (v == null || v.length == 0 || v[0] == null || v[0].trim().isEmpty()) {
+    	        continue;
+    	    }
 
-        session.setAttribute("testAnswers", saved);
+    	    saved.put(k, v[0]);
+    	}
 
-        return "redirect:/controller/career/tests/" + qno + "?page=" + page;
+    	session.setAttribute("testAnswers", saved);
+
+    	return "redirect:/controller/career/tests/" + qno + "?page=" + page;
+
     }
 
-    /** 📌 제출 */
-    @PostMapping("/submit")
-    public String submit(HttpSession session, Model model) {
 
-        // 🔥 세션 저장된 답변 그대로 가져오기
-        Map<String, String> body =
+    @PostMapping("/submit")
+    public String submit(
+            @RequestParam String gender,
+            @RequestParam String grade,
+            HttpSession session,
+            Model model) {
+
+        Map<String, String> answers =
                 (Map<String, String>) session.getAttribute("testAnswers");
 
-        if (body == null) body = new HashMap<>();
+        if (answers == null) answers = new HashMap<>();
 
-        // 🔥 서비스 호출
-        Map<String, Object> resp = service.submit(body);
+        List<Integer> qitemNos = (List<Integer>) session.getAttribute("qitemNos");
 
-        // 🔥 제출 후 세션 초기화
+        Map<String, Object> resp =
+                service.submit(answers, gender, grade, qitemNos);
+
+        System.out.println("======= SUBMIT RESPONSE =======");
+        System.out.println("resp = " + resp);
+
+        Object resultObject = resp.get("RESULT");
+        System.out.println("RESULT = " + resultObject);
+
+        if (resultObject instanceof Map) {
+            Map map = (Map) resultObject;
+            System.out.println("inspctSeq = " + map.get("inspctSeq"));
+            System.out.println("url = " + map.get("url"));
+        }
+
+        System.out.println("==================================");
+
         session.removeAttribute("testAnswers");
 
         model.addAttribute("result", resp);
-
         return "career/test-submit";
     }
+
+    
+    @GetMapping("/result-view")
+    public String resultView(@RequestParam int seq, Model model) {
+
+        String url = "https://www.career.go.kr/cloud/w/inspect/value/report?seq="
+                     + Base64.getEncoder().encodeToString(String.valueOf(seq).getBytes());
+
+        model.addAttribute("url", url);
+
+        return "career/test-result-view";
+    }
+
+
+
+
 }
