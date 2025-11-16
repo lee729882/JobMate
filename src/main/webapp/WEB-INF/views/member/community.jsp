@@ -172,7 +172,7 @@
 
             <div class="post-content">${post.content}</div>
 
-            <!-- 🔥 게시물 이미지 출력 -->
+            <!-- 게시물 이미지 출력 -->
             <c:if test="${not empty post.postImageBase64}">
                 <img class="post-image" src="${post.postImageBase64}">
             </c:if>
@@ -192,14 +192,14 @@
     <div class="write-form">
         <h2>글 작성</h2>
 
-        <!-- 🔥 파일 업로드 가능하도록 enctype 설정 -->
+        <!-- 파일 업로드 가능하도록 enctype 설정 -->
         <form method="post" enctype="multipart/form-data"
               action="${pageContext.request.contextPath}/community/${category}/write">
 
             <input type="text" name="title" placeholder="제목" required>
             <textarea name="content" rows="5" placeholder="내용" required></textarea>
 
-            <!-- 🔥 게시물 이미지 업로드 -->
+            <!-- 게시물 이미지 업로드 -->
             <label style="margin-top: 10px;">이미지 업로드:</label>
             <input type="file" name="postImageFile" accept="image/*">
 
