@@ -1,30 +1,48 @@
 package com.jobmate.mapper;
 
 import com.jobmate.domain.Member;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.*;
 
 @Mapper
 public interface MemberMapper {
 
-    /** 아이디 중복 여부 확인 */
+    // 이메일로 조회
+    @Select("SELECT ID, USERNAME, PASSWORD, EMAIL, NAME, PHONE, CAREER_TYPE, REGION, CERTIFICATIONS, PROFILE_IMAGE_BLOB " +
+            "FROM MEMBER WHERE EMAIL = #{email}")
+    Member findByEmail(String email);
+
+    // username 중복 체크
     @Select("SELECT CASE WHEN COUNT(1) > 0 THEN 1 ELSE 0 END FROM MEMBER WHERE USERNAME = #{username}")
     boolean existsByUsername(String username);
 
-    /** 이메일 중복 여부 확인 */
+    // email 중복 체크
     @Select("SELECT CASE WHEN COUNT(1) > 0 THEN 1 ELSE 0 END FROM MEMBER WHERE EMAIL = #{email}")
     boolean existsByEmail(String email);
 
-    /** 회원 등록 */
+    // 신규 회원 가입 (프로필 이미지 없음)
     @Insert("INSERT INTO MEMBER (ID, USERNAME, PASSWORD, EMAIL, NAME, PHONE, CAREER_TYPE, REGION, CERTIFICATIONS) " +
             "VALUES (MEMBER_SEQ.NEXTVAL, #{username}, #{password}, #{email}, #{name}, #{phone}, #{careerType}, #{region}, #{certifications})")
     void insertMember(Member member);
 
-
-    /** 사용자명으로 조회 */
-    @Select("SELECT ID, USERNAME, PASSWORD, EMAIL, NAME, PHONE, CAREER_TYPE, REGION, CERTIFICATIONS " +
+    // username으로 조회
+    @Select("SELECT ID, USERNAME, PASSWORD, EMAIL, NAME, PHONE, CAREER_TYPE, REGION, CERTIFICATIONS, PROFILE_IMAGE_BLOB " +
             "FROM MEMBER WHERE USERNAME = #{username}")
     Member findByUsername(String username);
 
+    // ID로 조회
+    @Select("SELECT ID, USERNAME, PASSWORD, EMAIL, NAME, PHONE, CAREER_TYPE, REGION, CERTIFICATIONS, PROFILE_IMAGE_BLOB " +
+            "FROM MEMBER WHERE ID = #{id}")
+    Member findById(Long id);
+
+    // 프로필 업데이트 (BLOB 포함)
+    @Update("UPDATE MEMBER SET " +
+            "EMAIL = #{email}, " +
+            "PHONE = #{phone}, " +
+            "CAREER_TYPE = #{careerType}, " +
+            "REGION = #{region}, " +
+            "CERTIFICATIONS = #{certifications}, " +
+            "NAME = #{name}, " +
+            "PROFILE_IMAGE_BLOB = #{profileImageBlob, jdbcType=BLOB} " +
+            "WHERE ID = #{id}")
+    void updateProfile(Member member);
 }

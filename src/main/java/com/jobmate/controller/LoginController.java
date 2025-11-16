@@ -7,9 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpSession;
+import java.util.Base64;
 
 @Controller
 @RequestMapping("/member")
@@ -18,39 +20,36 @@ public class LoginController {
     @Autowired
     private MemberService memberService;
 
-    /** ✅ 로그인 폼 */
+    /** 로그인 화면 */
     @GetMapping("/login")
     public String loginForm(Model model) {
         if (!model.containsAttribute("member")) {
             model.addAttribute("member", new MemberDto());
         }
-        return "login"; // /WEB-INF/views/login.jsp
+        return "login";
     }
 
-    /** ✅ 로그인 처리 */
+    /** 로그인 처리 */
     @PostMapping("/login")
     public String doLogin(@ModelAttribute("member") MemberDto memberDto,
                           HttpSession session,
                           RedirectAttributes ra,
                           Model model) {
 
-        // 1️⃣ 회원 인증
         Member found = memberService.authenticate(memberDto.getUsername(), memberDto.getPassword());
 
         if (found == null) {
-            model.addAttribute("error", "아이디 또는 비밀번호가 올바르지 않습니다.");
+            model.addAttribute("error", "아이디 또는 비밀번호가 잘못되었습니다.");
             return "login";
         }
 
-        // 2️⃣ 로그인 성공 → 세션에 사용자 정보 저장
         session.setAttribute("loginMember", found);
         ra.addFlashAttribute("loginMsg", found.getUsername() + "님 환영합니다!");
 
-        // 3️⃣ 로그인 성공 시 대시보드로 이동
         return "redirect:/member/dashboard";
     }
 
-    /** ✅ 로그아웃 처리 */
+    /** 로그아웃 */
     @PostMapping("/logout")
     public String logout(HttpSession session, RedirectAttributes ra) {
         session.invalidate();
@@ -58,17 +57,65 @@ public class LoginController {
         return "redirect:/member/login";
     }
 
-    /** ✅ 로그인 후 사용자 전용 대시보드 */
-    @GetMapping("/member/profile")
-    public String dashboard(HttpSession session, Model model) {
+    /** 프로필 페이지 */
+    @GetMapping("/profile")
+    public String profilePage(HttpSession session, Model model) {
+
         Member loginMember = (Member) session.getAttribute("loginMember");
 
         if (loginMember == null) {
-            return "redirect:/member/login"; // 세션 만료 시 로그인 페이지로
+            return "redirect:/member/login";
         }
 
-        model.addAttribute("loginMember", loginMember);
-        return "dashboard"; // /WEB-INF/views/dashboard.jsp
+        // 🔥 BLOB → Base64 변환
+        if (loginMember.getProfileImageBlob() != null) {
+            String base64 = Base64.getEncoder().encodeToString(loginMember.getProfileImageBlob());
+            model.addAttribute("profileBase64", base64);
+        }
+
+        model.addAttribute("member", loginMember);
+        return "member/profile";
     }
 
+    /** 프로필 업데이트 (BLOB 방식) */
+    @PostMapping("/profile/update")
+    public String updateProfile(@RequestParam(value = "profileImageFile", required = false) MultipartFile profileImageFile,
+                                Member member,
+                                HttpSession session,
+                                RedirectAttributes ra) {
+
+        Member loginMember = (Member) session.getAttribute("loginMember");
+        if (loginMember == null) {
+            return "redirect:/member/login";
+        }
+
+        // 🔒 변경 불가 항목 유지
+        member.setId(loginMember.getId());
+        member.setUsername(loginMember.getUsername());
+        member.setPassword(loginMember.getPassword());
+
+        try {
+            if (profileImageFile != null && !profileImageFile.isEmpty()) {
+                // 🔥 파일 → byte[]
+                member.setProfileImageBlob(profileImageFile.getBytes());
+            } else {
+                // 🔥 기존 이미지 유지
+                member.setProfileImageBlob(loginMember.getProfileImageBlob());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            ra.addFlashAttribute("msg", "프로필 이미지 처리 중 오류 발생!");
+        }
+
+        // 🔥 DB 업데이트
+        memberService.updateProfile(member);
+
+        // 🔥 세션 업데이트
+        Member updated = memberService.findById(member.getId());
+        session.setAttribute("loginMember", updated);
+
+        ra.addFlashAttribute("msg", "프로필이 수정되었습니다!");
+        return "redirect:/member/profile";
+    }
 }
