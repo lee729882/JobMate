@@ -36,7 +36,6 @@
             text-decoration: none;
         }
 
-        /* 🟢 로그인 유저 박스 */
         .user-info-box {
             display: flex;
             align-items: center;
@@ -55,7 +54,6 @@
             object-fit: cover;
         }
 
-        /* 🟣 게시글 카드 */
         .post-card {
             background: rgba(20, 30, 40, 0.7);
             border: 1px solid #34d399;
@@ -80,11 +78,6 @@
             object-fit: cover;
         }
 
-        .post-writer {
-            font-size: 16px;
-            font-weight: bold;
-        }
-
         .post-title {
             font-size: 20px;
             font-weight: bold;
@@ -98,6 +91,14 @@
             font-size: 16px;
             margin-bottom: 15px;
             color: #dbeafe;
+        }
+
+        .post-image {
+            width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+            border-radius: 10px;
+            margin-bottom: 15px;
         }
 
         .delete-btn {
@@ -125,24 +126,11 @@
             border-radius: 6px;
         }
 
-        button {
-            margin-top: 10px;
-            padding: 12px 20px;
-            background: #34d399;
-            border: none;
-            cursor: pointer;
-            color: black;
-            font-weight: bold;
-            border-radius: 6px;
-            width: 100%;
-        }
-
         .writer-box {
             display: flex; align-items: center; gap: 10px; margin-top: 10px;
             padding: 10px; border: 1px solid #34d399; border-radius: 8px;
             background: rgba(20, 30, 40, 0.5);
         }
-
         .writer-box img {
             width: 45px; height: 45px;
             border-radius: 50%; border: 2px solid #34d399;
@@ -159,7 +147,7 @@
 
     <h1>${category} 커뮤니티</h1>
 
-    <!-- 🔥 로그인 사용자 정보 (Base64 버전) -->
+    <!-- 로그인 사용자 정보 -->
     <c:if test="${not empty profileBase64}">
         <div class="user-info-box">
             <img src="data:image/png;base64,${profileBase64}">
@@ -170,8 +158,7 @@
         </div>
     </c:if>
 
-
-    <!-- 🔥 인스타 피드식 게시글 목록 -->
+    <!-- 게시글 목록 -->
     <c:forEach var="post" items="${posts}">
 
         <div class="post-card">
@@ -185,6 +172,11 @@
 
             <div class="post-content">${post.content}</div>
 
+            <!-- 🔥 게시물 이미지 출력 -->
+            <c:if test="${not empty post.postImageBase64}">
+                <img class="post-image" src="${post.postImageBase64}">
+            </c:if>
+
             <a href="${pageContext.request.contextPath}/community/${category}/${post.id}/delete"
                onclick="return confirm('정말 삭제하시겠습니까?')"
                class="delete-btn">
@@ -196,14 +188,20 @@
     </c:forEach>
 
 
-    <!-- ✏ 글쓰기 -->
+    <!-- 글쓰기 -->
     <div class="write-form">
         <h2>글 작성</h2>
 
-        <form method="post" action="${pageContext.request.contextPath}/community/${category}/write">
+        <!-- 🔥 파일 업로드 가능하도록 enctype 설정 -->
+        <form method="post" enctype="multipart/form-data"
+              action="${pageContext.request.contextPath}/community/${category}/write">
 
             <input type="text" name="title" placeholder="제목" required>
             <textarea name="content" rows="5" placeholder="내용" required></textarea>
+
+            <!-- 🔥 게시물 이미지 업로드 -->
+            <label style="margin-top: 10px;">이미지 업로드:</label>
+            <input type="file" name="postImageFile" accept="image/*">
 
             <div class="writer-box">
                 <img src="data:image/png;base64,${profileBase64}">
@@ -214,7 +212,6 @@
         </form>
     </div>
 
-    <!-- 메인 화면 이동 버튼 -->
     <a href="${pageContext.request.contextPath}/member/dashboard"
        style="display:block; text-align:center; margin-top:15px;
               padding:12px; border-radius:12px;

@@ -16,6 +16,10 @@ public class CommunityPost {
 
     // JSP에서 쓸 Base64 URL
     private String writerProfileBase64;
+    
+    private byte[] postImageBlob;      // 이미지 BLOB
+    private String postImageBase64;    // JSP 출력용(Base64)
+
 
     private String createdAt;
 }
