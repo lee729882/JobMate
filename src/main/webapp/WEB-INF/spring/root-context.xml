@@ -57,27 +57,23 @@
     <tx:annotation-driven transaction-manager="transactionManager"/>
 
     <!-- ========================= -->
-    <!-- Multipart Resolver (중요) -->
+    <!-- Multipart Resolver -->
     <!-- ========================= -->
     <bean id="multipartResolver"
           class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
 
-        <!-- 요청 전체 200MB -->
         <property name="maxUploadSize" value="209715200"/>
-
-        <!-- 파일 1개 50MB -->
         <property name="maxUploadSizePerFile" value="52428800"/>
-
-        <!-- 메모리 버퍼 -->
         <property name="maxInMemorySize" value="0"/>
-
-        <!-- 임시 저장 경로 -->
         <property name="uploadTempDir" value="file:/tmp"/>
     </bean>
 
     <!-- ========================= -->
-    <!-- @Controller, @Service 스캔 -->
+    <!-- @Controller/@Service 스캔 -->
     <!-- ========================= -->
     <context:component-scan base-package="com.jobmate"/>
+
+    <!-- 선택 기능 -->
+    <bean id="restTemplate" class="org.springframework.web.client.RestTemplate" />
 
 </beans>
