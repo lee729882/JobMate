@@ -93,7 +93,8 @@
         <div class="grid">
           <div class="col-12">
             <label for="username">아이디 *</label>
-            <input id="username" name="username" type="text" value="${member.username}" placeholder="아이디를 입력하세요" required />
+<input id="username" name="username" type="text"
+       placeholder="아이디를 입력하세요" required />
           </div>
           <div class="col-12">
             <label for="password">비밀번호 *</label>

@@ -9,7 +9,6 @@ import com.jobmate.mapper.MemberMapper;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,12 +20,8 @@ public class MemberService {
     @Autowired
     private MailService mailService;
 
-    // 🔥 BCrypt 비밀번호 암호화기
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
-
     /**
-     * 🔹 회원가입
+     * 🔹 회원가입 (암호화 제거 → 평문 저장)
      */
     public void register(MemberDto dto) {
 
@@ -41,8 +36,8 @@ public class MemberService {
         Member m = new Member();
         m.setUsername(dto.getUsername());
 
-        // 🔥 비밀번호는 반드시 암호화해서 저장
-        m.setPassword(passwordEncoder.encode(dto.getPassword()));
+        // 🔥 암호화 제거 — 그대로 저장
+        m.setPassword(dto.getPassword());
 
         m.setEmail(dto.getEmail());
         m.setPhone(dto.getPhone());
@@ -50,26 +45,24 @@ public class MemberService {
         m.setCareerType(dto.getCareerType());
         m.setRegion(dto.getRegion());
         m.setCertifications(dto.getCertifications());
-        m.setProfileImageBlob(null); // 프로필 이미지 없음
+        m.setProfileImageBlob(null);
 
         memberMapper.insertMember(m);
     }
 
-
     /**
-     * 🔹 로그인 (아이디 + 비밀번호)
+     * 🔹 로그인 (평문 비교)
      */
     public Member authenticate(String username, String rawPassword) {
         Member found = memberMapper.findByUsername(username);
         if (found == null) return null;
 
-        // 🔥 BCrypt로 비교
-        if (passwordEncoder.matches(rawPassword, found.getPassword())) {
+        // 🔥 평문 비교
+        if (rawPassword.equals(found.getPassword())) {
             return found;
         }
         return null;
     }
-
 
     /**
      * 🔹 아이디로 조회
@@ -77,7 +70,6 @@ public class MemberService {
     public Member findByUsername(String username) {
         return memberMapper.findByUsername(username);
     }
-
 
     /**
      * 🔥 회원 조회 (ID 기준)
@@ -90,7 +82,6 @@ public class MemberService {
         return m;
     }
 
-
     /**
      * 🔥 프로필 업데이트
      */
@@ -101,7 +92,6 @@ public class MemberService {
             throw new IllegalArgumentException("존재하지 않는 회원입니다.");
         }
 
-        // 이메일 중복 검사 (자기 자신 제외)
         Member emailOwner = memberMapper.findByEmail(member.getEmail());
         if (emailOwner != null && !emailOwner.getId().equals(member.getId())) {
             throw new DuplicateEmailException("이미 사용 중인 이메일입니다.");
@@ -110,9 +100,8 @@ public class MemberService {
         memberMapper.updateProfile(member);
     }
 
-
     /**
-     * 🔥 비밀번호 찾기 - 임시 비밀번호 발급
+     * 🔥 비밀번호 찾기 - 임시 비밀번호 발급 (암호화 제거)
      */
     public boolean sendTempPassword(String username, String email) {
 
@@ -125,11 +114,8 @@ public class MemberService {
         // 임시 비밀번호 생성
         String tempPw = UUID.randomUUID().toString().substring(0, 10);
 
-        // DB 저장용 암호화
-        String encPw = passwordEncoder.encode(tempPw);
-
-        // DB 업데이트
-        memberMapper.updatePassword(username, encPw);
+        // 🔥 암호화 제거 → 평문 저장
+        memberMapper.updatePassword(username, tempPw);
 
         // 이메일 발송
         String title = "[JobMate] 임시 비밀번호 안내";

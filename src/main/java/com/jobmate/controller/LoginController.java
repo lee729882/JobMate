@@ -33,14 +33,13 @@ public class LoginController {
     @PostMapping("/login")
     public String doLogin(@ModelAttribute("member") MemberDto memberDto,
                           HttpSession session,
-                          RedirectAttributes ra,
-                          Model model) {
+                          RedirectAttributes ra) {
 
         Member found = memberService.authenticate(memberDto.getUsername(), memberDto.getPassword());
 
         if (found == null) {
-            model.addAttribute("error", "아이디 또는 비밀번호가 잘못되었습니다.");
-            return "login";
+            ra.addFlashAttribute("error", "아이디 또는 비밀번호가 잘못되었습니다.");
+            return "redirect:/member/login";
         }
 
         session.setAttribute("loginMember", found);
@@ -48,6 +47,7 @@ public class LoginController {
 
         return "redirect:/member/dashboard";
     }
+
 
     /** 로그아웃 */
     @PostMapping("/logout")
