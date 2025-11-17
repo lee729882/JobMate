@@ -5,59 +5,173 @@
 
 <mapper namespace="com.jobmate.mapper.CommunityMapper">
 
-    <!-- 매핑 -->
+    <!-- ============================================================
+         📌 전체 매핑 (alias 기반 → MyBatis 대소문자 문제 100% 해결)
+         ============================================================ -->
     <resultMap id="CommunityPostMap" type="com.jobmate.domain.CommunityPost">
         <id property="id" column="id"/>
+
         <result property="category" column="category"/>
         <result property="title" column="title"/>
         <result property="content" column="content"/>
         <result property="writer" column="writer"/>
 
-        <!-- 🔥 BLOB → writerProfileBlob -->
-        <result property="writerProfileBlob" column="writer_profile_blob" jdbcType="BLOB"/>
+        <result property="writerProfileBlob" column="writerProfileBlob" jdbcType="BLOB"/>
+        <result property="postImageBlob" column="postImageBlob" jdbcType="BLOB"/>
 
-        <result property="createdAt" column="created_at"/>
-        
-        <result property="postImageBlob" column="post_image_blob" jdbcType="BLOB"/>
-        
+        <result property="likeCount" column="likeCount"/>
+        <result property="createdAt" column="createdAt"/>
     </resultMap>
 
 
-    <!-- 카테고리 별 조회 -->
-    <select id="findByCategory" parameterType="string" resultMap="CommunityPostMap">
-        SELECT *
+    <!-- ============================================================
+         📌 카테고리별 조회 - alias 강제 적용
+         ============================================================ -->
+    <select id="findByCategory" resultMap="CommunityPostMap">
+        SELECT
+            ID AS id,
+            CATEGORY AS category,
+            TITLE AS title,
+            CONTENT AS content,
+            WRITER AS writer,
+            WRITER_PROFILE_BLOB AS writerProfileBlob,
+            POST_IMAGE_BLOB AS postImageBlob,
+            LIKE_COUNT AS likeCount,
+            CREATED_AT AS createdAt
         FROM COMMUNITY_POST
         WHERE CATEGORY = #{category}
         ORDER BY ID DESC
     </select>
 
-    <!-- 단건 조회 -->
-    <select id="findById" parameterType="long" resultMap="CommunityPostMap">
-        SELECT *
+
+    <!-- ============================================================
+         📌 ID로 단일 조회
+         ============================================================ -->
+    <select id="findById" resultMap="CommunityPostMap">
+        SELECT
+            ID AS id,
+            CATEGORY AS category,
+            TITLE AS title,
+            CONTENT AS content,
+            WRITER AS writer,
+            WRITER_PROFILE_BLOB AS writerProfileBlob,
+            POST_IMAGE_BLOB AS postImageBlob,
+            LIKE_COUNT AS likeCount,
+            CREATED_AT AS createdAt
         FROM COMMUNITY_POST
         WHERE ID = #{id}
     </select>
 
-    <!-- 글 저장 -->
-    <insert id="insertPost" parameterType="com.jobmate.domain.CommunityPost">
-    INSERT INTO COMMUNITY_POST
-    (id, category, title, content, writer, writer_profile_blob, post_image_blob)
-    VALUES (
-        COMMUNITY_POST_SEQ.NEXTVAL,
-        #{category},
-        #{title},
-        #{content},
-        #{writer},
-        #{writerProfileBlob, jdbcType=BLOB},
-        #{postImageBlob, jdbcType=BLOB}
-    	)
-	</insert>
+
+    <!-- ============================================================
+         📌 글 작성
+         ============================================================ -->
+    <insert id="insertPost">
+        INSERT INTO COMMUNITY_POST
+        (ID, CATEGORY, TITLE, CONTENT, WRITER,
+         WRITER_PROFILE_BLOB, POST_IMAGE_BLOB, LIKE_COUNT)
+        VALUES
+        (COMMUNITY_POST_SEQ.NEXTVAL,
+         #{category}, #{title}, #{content}, #{writer},
+         #{writerProfileBlob, jdbcType=BLOB},
+         #{postImageBlob, jdbcType=BLOB},
+         0)
+    </insert>
 
 
-    <!-- 삭제 -->
-    <delete id="deletePost" parameterType="long">
+    <!-- ============================================================
+         📌 글 삭제
+         ============================================================ -->
+    <delete id="deletePost">
         DELETE FROM COMMUNITY_POST
         WHERE ID = #{id}
     </delete>
+
+
+    <!-- ============================================================
+         📌 좋아요 여부 체크
+         ============================================================ -->
+    <select id="isLiked" resultType="int">
+        SELECT COUNT(*)
+        FROM POST_LIKE
+        WHERE POST_ID = #{postId}
+        AND USER_ID = #{userId}
+    </select>
+
+
+    <!-- 좋아요 추가 -->
+    <insert id="insertLike">
+        INSERT INTO POST_LIKE (POST_ID, USER_ID)
+        VALUES (#{postId}, #{userId})
+    </insert>
+
+    <!-- 좋아요 취소 -->
+    <delete id="deleteLike">
+        DELETE FROM POST_LIKE
+        WHERE POST_ID = #{postId}
+        AND USER_ID = #{userId}
+    </delete>
+
+
+    <!-- 좋아요 증가 -->
+    <update id="increaseLike">
+        UPDATE COMMUNITY_POST
+        SET LIKE_COUNT = LIKE_COUNT + 1
+        WHERE ID = #{postId}
+    </update>
+
+    <!-- 좋아요 감소 -->
+    <update id="decreaseLike">
+        UPDATE COMMUNITY_POST
+        SET LIKE_COUNT = LIKE_COUNT - 1
+        WHERE ID = #{postId}
+    </update>
+
+
+    <!-- 최신 좋아요 수 조회 -->
+    <select id="getLikeCount" resultType="int">
+        SELECT LIKE_COUNT
+        FROM COMMUNITY_POST
+        WHERE ID = #{postId}
+    </select>
+
+
+    <!-- ============================================================
+         📌 글 수정 (이미지 포함)
+         ============================================================ -->
+    <update id="updatePost">
+        UPDATE COMMUNITY_POST
+        SET
+            TITLE = #{title},
+            CONTENT = #{content},
+            POST_IMAGE_BLOB = #{postImageBlob, jdbcType=BLOB}
+        WHERE ID = #{id}
+    </update>
+    
+    <delete id="deleteLikesByPost">
+    	DELETE FROM POST_LIKE
+    	WHERE POST_ID = #{postId}
+	</delete>
+	
+	<!-- ❤️ 내가 좋아요한 게시글 조회 -->
+	<select id="findLikedPostsByUser" resultMap="CommunityPostMap">
+	    SELECT
+	        p.ID AS id,
+	        p.CATEGORY AS category,
+	        p.TITLE AS title,
+	        p.CONTENT AS content,
+	        p.WRITER AS writer,
+	        p.WRITER_PROFILE_BLOB AS writerProfileBlob,
+	        p.POST_IMAGE_BLOB AS postImageBlob,
+	        p.LIKE_COUNT AS likeCount,
+	        p.CREATED_AT AS createdAt
+	    FROM COMMUNITY_POST p
+	    JOIN POST_LIKE l
+	      ON p.ID = l.POST_ID
+	    WHERE l.USER_ID = #{userId}
+	    ORDER BY p.ID DESC
+	</select>
+	
+    
 
 </mapper>

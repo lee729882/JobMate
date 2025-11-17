@@ -12,7 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpSession;
 import java.util.Base64;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/community")
@@ -44,33 +44,12 @@ public class CommunityController {
         model.addAttribute("loginUser", loginUser);
         model.addAttribute("category", category);
 
-        // 게시글 목록 + 작성자 프로필 Base64 변환
-        List<CommunityPost> rawPosts = communityService.getPostsByCategory(category);
-
-        List<CommunityPost> convertedPosts = rawPosts.stream().map(post -> {
-
-            // 작성자 프로필 이미지 Base64 처리
-            if (post.getWriterProfileBlob() != null) {
-                String base64 = "data:image/png;base64," +
-                        Base64.getEncoder().encodeToString(post.getWriterProfileBlob());
-                post.setWriterProfileBase64(base64);
-            }
-
-            // 게시글 이미지 Base64 처리
-            if (post.getPostImageBlob() != null) {
-                String base64 = "data:image/png;base64," +
-                        Base64.getEncoder().encodeToString(post.getPostImageBlob());
-                post.setPostImageBase64(base64);
-            }
-
-            return post;
-        }).collect(Collectors.toList());
-
-        model.addAttribute("posts", convertedPosts);
+        // 게시물 목록
+        List<CommunityPost> posts = communityService.getPostsByCategory(category, loginUser.getId());
+        model.addAttribute("posts", posts);
 
         return "member/community";
     }
-
 
     /** 🔥 게시물 작성 */
     @PostMapping("/{category}/write")
@@ -82,25 +61,24 @@ public class CommunityController {
             HttpSession session) {
 
         Member loginUser = (Member) session.getAttribute("loginMember");
-
         if (loginUser == null) {
             return "redirect:/member/login";
         }
 
         try {
-            // 게시물 이미지 BLOB 생성
-            byte[] postImageBytes = (postImageFile != null && !postImageFile.isEmpty())
-                    ? postImageFile.getBytes()
-                    : null;
+            byte[] postImageBytes = null;
 
-            // 저장
+            if (postImageFile != null && !postImageFile.isEmpty()) {
+                postImageBytes = postImageFile.getBytes();
+            }
+
             communityService.savePost(
                     category,
                     title,
                     content,
                     loginUser.getUsername(),
                     loginUser.getProfileImageBlob(),
-                    postImageBytes // 🔥 게시물 이미지 BLOB
+                    postImageBytes
             );
 
         } catch (Exception e) {
@@ -118,12 +96,92 @@ public class CommunityController {
             HttpSession session) {
 
         Member loginUser = (Member) session.getAttribute("loginMember");
+        if (loginUser == null) return "redirect:/member/login";
 
-        if (loginUser == null) {
-            return "redirect:/member/login";
+        CommunityPost post = communityService.getPost(id, loginUser.getId());
+        if (post == null) return "redirect:/community/" + category;
+
+        if (!post.getWriter().equals(loginUser.getUsername())) {
+            return "redirect:/community/" + category + "?error=forbidden";
         }
 
         communityService.deletePost(id);
         return "redirect:/community/" + category;
+    }
+
+    /** ❤️ 좋아요 토글 */
+    @PostMapping("/{category}/{postId}/like")
+    @ResponseBody
+    public Map<String, Object> toggleLike(
+            @PathVariable String category,
+            @PathVariable Long postId,
+            HttpSession session) {
+
+        Member loginUser = (Member) session.getAttribute("loginMember");
+
+        if (loginUser == null) {
+            return Map.of("status", "NOT_LOGGED_IN");
+        }
+
+        boolean liked = communityService.toggleLike(postId, loginUser.getId());
+        int newCount = communityService.getLikeCount(postId);
+
+        return Map.of(
+                "status", liked ? "LIKED" : "UNLIKED",
+                "likeCount", newCount,
+                "postId", postId
+        );
+    }
+
+    /** 🔥 게시글 수정(JSON 결과 반환) */
+    @PostMapping("/{category}/{id}/edit")
+    @ResponseBody
+    public Map<String, Object> editPost(
+            @PathVariable String category,
+            @PathVariable Long id,
+            @RequestParam String title,
+            @RequestParam String content,
+            @RequestParam(value = "postImageFile", required = false) MultipartFile postImageFile,
+            HttpSession session) {
+
+        Member loginUser = (Member) session.getAttribute("loginMember");
+        if (loginUser == null) {
+            return Map.of("status", "NOT_LOGIN");
+        }
+
+        CommunityPost post = communityService.getPost(id, loginUser.getId());
+        if (post == null) {
+            return Map.of("status", "NO_POST");
+        }
+
+        if (!post.getWriter().equals(loginUser.getUsername())) {
+            return Map.of("status", "FORBIDDEN");
+        }
+
+        try {
+            byte[] newImg = post.getPostImageBlob();
+            if (postImageFile != null && !postImageFile.isEmpty()) {
+                newImg = postImageFile.getBytes();
+            }
+
+            communityService.updatePost(id, title, content, newImg);
+
+            String base64Image = null;
+            if (newImg != null) {
+                base64Image = "data:image/png;base64," +
+                        Base64.getEncoder().encodeToString(newImg);
+            }
+
+            return Map.of(
+                    "status", "OK",
+                    "title", title,
+                    "content", content,
+                    "imageBase64", base64Image
+            );
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Map.of("status", "ERROR");
+        }
     }
 }

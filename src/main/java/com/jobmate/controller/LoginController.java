@@ -2,7 +2,9 @@ package com.jobmate.controller;
 
 import com.jobmate.dto.MemberDto;
 import com.jobmate.domain.Member;
+import com.jobmate.domain.CommunityPost;
 import com.jobmate.service.MemberService;
+import com.jobmate.service.CommunityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,6 +14,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpSession;
 import java.util.Base64;
+import java.util.List;
 
 @Controller
 @RequestMapping("/member")
@@ -19,6 +22,9 @@ public class LoginController {
 
     @Autowired
     private MemberService memberService;
+
+    @Autowired
+    private CommunityService communityService;   // ⭐ 추가됨
 
     /** 로그인 화면 */
     @GetMapping("/login")
@@ -57,7 +63,7 @@ public class LoginController {
         return "redirect:/member/login";
     }
 
-    /** 프로필 페이지 */
+    /** 🔥 프로필 페이지 */
     @GetMapping("/profile")
     public String profilePage(HttpSession session, Model model) {
 
@@ -67,17 +73,21 @@ public class LoginController {
             return "redirect:/member/login";
         }
 
-        // 🔥 BLOB → Base64 변환
+        // 🔥 프로필 Base64 변환
         if (loginMember.getProfileImageBlob() != null) {
             String base64 = Base64.getEncoder().encodeToString(loginMember.getProfileImageBlob());
             model.addAttribute("profileBase64", base64);
         }
 
+        // 🔥 "내가 좋아요한 게시물" 조회
+        List<CommunityPost> likedPosts = communityService.getLikedPosts(loginMember.getId());
+        model.addAttribute("likedPosts", likedPosts);
+
         model.addAttribute("member", loginMember);
         return "member/profile";
     }
 
-    /** 프로필 업데이트 (BLOB 방식) */
+    /** 🔥 프로필 업데이트 */
     @PostMapping("/profile/update")
     public String updateProfile(@RequestParam(value = "profileImageFile", required = false) MultipartFile profileImageFile,
                                 Member member,
@@ -89,17 +99,15 @@ public class LoginController {
             return "redirect:/member/login";
         }
 
-        // 🔒 변경 불가 항목 유지
+        // 🔒 변경 불가 값 유지
         member.setId(loginMember.getId());
         member.setUsername(loginMember.getUsername());
         member.setPassword(loginMember.getPassword());
 
         try {
             if (profileImageFile != null && !profileImageFile.isEmpty()) {
-                // 🔥 파일 → byte[]
                 member.setProfileImageBlob(profileImageFile.getBytes());
             } else {
-                // 🔥 기존 이미지 유지
                 member.setProfileImageBlob(loginMember.getProfileImageBlob());
             }
 
