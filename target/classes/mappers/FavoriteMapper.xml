@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.jobmate.mapper.FavoriteMapper">
+
+  <!-- ✅ 찜 여부 확인 -->
+  <select id="checkFavorite" resultType="boolean">
+    SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END AS result
+    FROM favorite_employment
+    WHERE member_id = #{memberId}
+      AND emp_source = #{source}
+      AND emp_seqno = #{empSeqno}
+  </select>
+
+  <!-- ✅ 찜 추가 -->
+  <insert id="addFavorite">
+    INSERT INTO favorite_employment
+      (member_id, emp_source, emp_seqno, emp_title, emp_company, emp_deadline, created_at)
+    VALUES
+      (#{memberId}, #{source}, #{empSeqno}, #{title}, #{company}, #{deadline}, SYSDATE)
+  </insert>
+
+  <!-- ✅ 찜 삭제 -->
+  <delete id="removeFavorite">
+    DELETE FROM favorite_employment
+    WHERE member_id = #{memberId}
+      AND emp_source = #{source}
+      AND emp_seqno = #{empSeqno}
+  </delete>
+
+<select id="getFavorites" resultType="map">
+  SELECT 
+    emp_company AS "empCompany",
+    emp_title AS "empTitle",
+    emp_deadline AS "empDeadline",
+    emp_source AS "empSource",
+    emp_seqno AS "empSeqno"
+  FROM favorite_employment
+  WHERE member_id = #{memberId}
+  ORDER BY created_at DESC
+</select>
+
+
+  <!-- ✅ 찜 개수 -->
+  <select id="countFavorites" resultType="int">
+    SELECT COUNT(*) FROM favorite_employment
+    WHERE member_id = #{memberId}
+  </select>
+
+	<update id="updateProfile">
+	    UPDATE MEMBER
+	    SET
+	        EMAIL = #{email},
+	        PHONE = #{phone},
+	        CAREER_TYPE = #{careerType},
+	        REGION = #{region},
+	        CERTIFICATIONS = #{certifications},
+	        NAME = #{name},
+	        PROFILE_IMAGE = #{profileImage}
+	    WHERE ID = #{id}
+	</update>
+</mapper>
