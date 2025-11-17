@@ -103,7 +103,7 @@
             <label style="display:flex;align-items:center;gap:8px;">
               <input type="checkbox" name="remember" value="Y" style="width:auto;"> 로그인 상태 유지
             </label>
-            <a href="#" class="hint" onclick="alert('비밀번호 찾기는 추후 연결 예정입니다.'); return false;">비밀번호 찾기</a>
+			<a href="<c:url value='/member/findPw'/>" class="hint">비밀번호 찾기</a>
           </div>
         </div>
 

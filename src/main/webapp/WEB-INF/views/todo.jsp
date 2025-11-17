@@ -125,8 +125,8 @@
         <a href="${pageContext.request.contextPath}/member/dashboard">대시보드</a>
         <a class="active" href="${pageContext.request.contextPath}/member/todo">To-Do</a>
         <a href="${pageContext.request.contextPath}/member/employment/list">면접 AI</a>
-        <a href="#">취업 커뮤니티</a>
-        <a href="${pageContext.request.contextPath}/member/member/profile">My Profile</a>
+      <a href="${pageContext.request.contextPath}/member/community/select">취업 커뮤니티</a>
+      <a href="${pageContext.request.contextPath}/member/profile">My Profile</a>
       </div>
       <div class="right">
         <form action="${pageContext.request.contextPath}/member/logout" method="post" style="margin:0">

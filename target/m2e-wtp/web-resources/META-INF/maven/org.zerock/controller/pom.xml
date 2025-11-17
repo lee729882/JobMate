@@ -76,6 +76,25 @@
     <artifactId>jackson-annotations</artifactId>
     <version>2.16.1</version>
 </dependency>
+<!-- Spring JavaMail Sender -->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-context-support</artifactId>
+    <version>${org.springframework-version}</version>
+</dependency>
+
+<!-- JavaMail API (Jakarta Mail 이전 버전) -->
+<dependency>
+    <groupId>javax.mail</groupId>
+    <artifactId>mail</artifactId>
+    <version>1.4.7</version>
+</dependency>
+<!-- BCrypt (암호화) -->
+<dependency>
+    <groupId>org.springframework.security</groupId>
+    <artifactId>spring-security-crypto</artifactId>
+    <version>5.0.7.RELEASE</version>
+</dependency>
 
         <!-- AspectJ -->
         <dependency>
