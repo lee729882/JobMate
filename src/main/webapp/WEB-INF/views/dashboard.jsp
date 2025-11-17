@@ -450,8 +450,7 @@
         <!-- ✅ 탭 버튼 -->
         <div class="job-tabs">
           <button class="tab-btn active" onclick="showTab('gongchae')">공채속보</button>
-          <button class="tab-btn" onclick="showTab('saramin')">사람인</button>
-          <button class="tab-btn" onclick="showTab('jobkorea')">잡코리아</button>
+
         </div>
 
         <!-- ✅ 공채속보 탭 -->
