@@ -48,13 +48,23 @@
 </head>
 <body>
 
- <!-- ✅ 상단 네비게이션 추가 -->
-  <nav style="margin-bottom:30px; font-size:16px; font-weight:600;">
-  <a href="${pageContext.request.contextPath}/admin/public-todo"
-     style="margin-right:18px; color:#ffd07f; text-decoration:none;">공용 미션 관리</a>
+<!-- ✅ 상단 네비게이션 (관리자만 공용 미션 관리 보이게) -->
+<nav style="margin-bottom:30px; font-size:16px; font-weight:600;">
+
+  <c:if test="${sessionScope.loginMember != null 
+               && sessionScope.loginMember.username == 'minwoo0821'}">
+    <a href="${pageContext.request.contextPath}/admin/public-todo"
+       style="margin-right:18px; color:#ffd07f; text-decoration:none;">
+      공용 미션 관리
+    </a>
+  </c:if>
+
   <a href="${pageContext.request.contextPath}/member/todo"
-     style="color:#7fc8ff; text-decoration:none;">To-Do | JobMate</a>
+     style="color:#7fc8ff; text-decoration:none;">
+    To-Do | JobMate
+  </a>
 </nav>
+
 
   <h1>💪 공용 미션</h1>
 
