@@ -546,7 +546,16 @@
     <div class="r-icon-sm">⭐</div>
     <div class="r-txt-wrap">
         <div class="r-title">JobMate 점수</div>
-        <div class="r-sub-sm">상위 25%</div>
+        <c:choose>
+    <c:when test="${totalUsers > 0}">
+      <p>
+        상위 ${topPercent}% (${totalUsers}명 중 ${userRank}위)
+      </p>
+    </c:when>
+    <c:otherwise>
+      <p>아직 랭킹 데이터가 없습니다.</p>
+    </c:otherwise>
+  </c:choose>
     </div>
 </div>
 
@@ -577,7 +586,11 @@
   최근 본 공고
 </button>
     <button class="quick-btn">AI 면접 바로가기</button>
-    <button class="quick-btn">직렬별 랭킹</button>
+      <button class="quick-btn"
+          onclick="location.href='${pageContext.request.contextPath}/member/ranking'">
+    직렬별 랭킹
+  </button>
+
   </div>
 </main>
 
