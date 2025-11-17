@@ -67,14 +67,7 @@
 </head>
 
 <body>
-<pre>
-result: ${result}
-result.RESULT: ${result.RESULT}
-result.RESULT.inspctSeq: ${result.RESULT.inspctSeq}
-</pre>
-
 <div class="card">
-
     <h1>검사 완료!</h1>
     <p>아래 버튼을 눌러 결과를 확인하세요.</p>
 

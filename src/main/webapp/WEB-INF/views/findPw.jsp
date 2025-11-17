@@ -4,7 +4,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>로그인 | JobMate</title>
+  <title>비밀번호 찾기 | JobMate</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
@@ -44,11 +44,7 @@
     .title h2{ margin:0; font-size:22px; font-weight:800; }
     .subtitle{ color:var(--muted); font-size:13px; }
 
-    .grid{ display:grid; gap:16px; grid-template-columns: repeat(12, 1fr); }
-    .col-6{ grid-column: span 6; } .col-12{ grid-column: span 12; }
-    @media (max-width: 900px){ .col-6{ grid-column: span 12; }}
-
-    label{ display:block; margin:2px 0 8px; font-size:13px; color:#fff; }
+    label{ display:block; margin:8px 0 6px; font-size:13px; }
     input{
       width:100%; box-sizing:border-box; padding:12px 14px; color:#fff;
       background:#0e172a; border:1px solid #1f2946; border-radius:12px; outline:none;
@@ -59,18 +55,19 @@
       box-shadow:0 0 0 3px rgba(34,211,238,.15), 0 10px 30px rgba(34,211,238,.05);
     }
 
-    .actions{ margin-top:18px; display:flex; gap:10px; justify-content:flex-end; }
+    .actions{ margin-top:20px; display:flex; gap:10px; justify-content:flex-end; }
     .btn{ border:none; cursor:pointer; padding:12px 18px; border-radius:12px; font-weight:800; color:white;
       background:linear-gradient(135deg, var(--btn), #19b354); box-shadow:0 10px 24px rgba(22,163,74,.25); }
     .btn-secondary{ background:linear-gradient(135deg, #334155, #1f2937); }
 
-    .row-inline{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
-    .hint{ color:var(--muted); font-size:12px; }
     .error{ color:#ffb4b4; background:#2b0e12; border:1px solid #7f1d1d; padding:10px 12px; border-radius:10px; margin-bottom:12px; }
     .ok{ color:#b7ffcf; background:#0f2b1a; border:1px solid #14532d; padding:10px 12px; border-radius:10px; margin-bottom:12px; }
+
+    .back-link{ font-size:12px; color:var(--muted); margin-top:12px; display:inline-block; }
   </style>
 </head>
 <body>
+
   <div class="wrap">
     <div class="brand">
       <div class="logo"></div><h1>JobMate</h1>
@@ -78,68 +75,41 @@
 
     <div class="card" style="max-width:640px;margin:0 auto;">
       <div class="title">
-        <h2>로그인</h2>
-        <div class="subtitle">아이디와 비밀번호를 입력해 주세요.</div>
+        <h2>비밀번호 찾기</h2>
+        <div class="subtitle">가입한 아이디와 이메일을 입력해주세요.</div>
       </div>
 
-      <c:if test="${not empty error}">
-        <div class="error"><c:out value="${error}"/></div>
+      <!-- 메시지 출력 -->
+      <c:if test="${not empty msg}">
+        <div class="ok"><c:out value="${msg}" /></div>
       </c:if>
-      <c:if test="${not empty loginMsg}">
-        <div class="ok"><c:out value="${loginMsg}"/></div>
+      <c:if test="${not empty error}">
+        <div class="error"><c:out value="${error}" /></div>
       </c:if>
 
-      <form action="<c:url value='/member/login'/>" method="post" autocomplete="off" accept-charset="UTF-8">
-        <div class="grid">
-          <div class="col-12">
-            <label for="username">아이디 *</label>
-<input id="username" name="username" type="text"
-       placeholder="아이디를 입력하세요" required />
-          </div>
-          <div class="col-12">
-            <label for="password">비밀번호 *</label>
-            <input id="password" name="password" type="password" placeholder="비밀번호를 입력하세요" required />
-          </div>
-          <div class="col-12 row-inline">
-            <label style="display:flex;align-items:center;gap:8px;">
-              <input type="checkbox" name="remember" value="Y" style="width:auto;"> 로그인 상태 유지
-            </label>
-			<a href="<c:url value='/member/findPw'/>" class="hint">비밀번호 찾기</a>
-          </div>
-        </div>
+      <!-- FORM -->
+      <form action="<c:url value='/member/findPw'/>" method="post">
+        <label>아이디 *</label>
+        <input type="text" name="username" placeholder="가입한 아이디를 입력하세요" required />
+
+        <label style="margin-top:14px;">이메일 *</label>
+        <input type="email" name="email" placeholder="가입한 이메일을 입력하세요" required />
 
         <div class="actions">
-          <a class="btn btn-secondary" href="<c:url value='/member/signup'/>" style="text-decoration:none;display:inline-block;">회원가입</a>
-          <button class="btn" type="submit">로그인</button>
+<a class="btn btn-secondary" 
+   href="<c:url value='/member/login'/>" 
+   style="text-decoration:none;display:inline-block;">
+  돌아가기
+</a>
+          <button type="submit" class="btn">임시 비밀번호 발송</button>
         </div>
       </form>
 
-      <c:if test="${not empty sessionScope.loginMember}">
-        <hr style="border:0; border-top:1px solid var(--line); margin:18px 0;">
-        <div class="row-inline">
-          <div class="hint">
-            <b><c:out value="${sessionScope.loginMember.username}"/></b> 님으로 로그인됨
-          </div>
-          <form action="<c:url value='/member/logout'/>" method="post" style="margin:0;">
-            <button class="btn btn-secondary" type="submit">로그아웃</button>
-          </form>
-        </div>
-      </c:if>
+      <!-- 뒤로가기 -->
+      <a href="<c:url value='/member/login'/>" class="back-link">로그인 화면으로 돌아가기</a>
+
     </div>
   </div>
 
-  <script>
-    // Enter키 UX: 비번 입력 중 Enter 누르면 제출
-    document.getElementById('password')?.addEventListener('keydown', function(e){
-      if(e.key === 'Enter'){
-        e.target.form?.submit();
-      }
-    });
-    // 첫 진입 포커스
-    window.addEventListener('DOMContentLoaded', () => {
-      const u = document.getElementById('username');
-      if(u && !u.value) u.focus();
-    });
-  </script>
 </body>
 </html>

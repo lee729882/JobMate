@@ -39,14 +39,13 @@ public class LoginController {
     @PostMapping("/login")
     public String doLogin(@ModelAttribute("member") MemberDto memberDto,
                           HttpSession session,
-                          RedirectAttributes ra,
-                          Model model) {
+                          RedirectAttributes ra) {
 
         Member found = memberService.authenticate(memberDto.getUsername(), memberDto.getPassword());
 
         if (found == null) {
-            model.addAttribute("error", "아이디 또는 비밀번호가 잘못되었습니다.");
-            return "login";
+            ra.addFlashAttribute("error", "아이디 또는 비밀번호가 잘못되었습니다.");
+            return "redirect:/member/login";
         }
 
         session.setAttribute("loginMember", found);
@@ -54,6 +53,7 @@ public class LoginController {
 
         return "redirect:/member/dashboard";
     }
+
 
     /** 로그아웃 */
     @PostMapping("/logout")
@@ -126,4 +126,28 @@ public class LoginController {
         ra.addFlashAttribute("msg", "프로필이 수정되었습니다!");
         return "redirect:/member/profile";
     }
+    
+    // 비밀번호 찾기 페이지 (GET)
+    @GetMapping("/findPw")
+    public String findPwForm() {
+        return "findPw";  // JSP 경로: /WEB-INF/views/member/findPw.jsp
+    }
+
+    // 비밀번호 찾기 처리 (POST)
+    @PostMapping("/findPw")
+    public String findPw(@RequestParam("username") String username,
+                         @RequestParam("email") String email,
+                         Model model) {
+
+        boolean ok = memberService.sendTempPassword(username, email);
+
+        if(ok){
+            model.addAttribute("msg", "임시 비밀번호가 이메일로 발송되었습니다.");
+        } else {
+            model.addAttribute("error", "아이디 또는 이메일 정보가 일치하지 않습니다.");
+        }
+
+        return "findPw";
+    }
+
 }

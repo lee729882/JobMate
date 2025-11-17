@@ -5,6 +5,9 @@ import com.jobmate.dto.MemberDto;
 import com.jobmate.exception.DuplicateEmailException;
 import com.jobmate.exception.DuplicateUsernameException;
 import com.jobmate.mapper.MemberMapper;
+
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,8 +17,11 @@ public class MemberService {
     @Autowired
     private MemberMapper memberMapper;
 
+    @Autowired
+    private MailService mailService;
+
     /**
-     * 🔹 회원가입
+     * 🔹 회원가입 (암호화 제거 → 평문 저장)
      */
     public void register(MemberDto dto) {
 
@@ -29,28 +35,33 @@ public class MemberService {
 
         Member m = new Member();
         m.setUsername(dto.getUsername());
+
+        // 🔥 암호화 제거 — 그대로 저장
         m.setPassword(dto.getPassword());
+
         m.setEmail(dto.getEmail());
         m.setPhone(dto.getPhone());
         m.setName(dto.getName());
         m.setCareerType(dto.getCareerType());
         m.setRegion(dto.getRegion());
         m.setCertifications(dto.getCertifications());
-
-        // 가입시 프로필 이미지는 없으므로 null (BLOB)
         m.setProfileImageBlob(null);
 
         memberMapper.insertMember(m);
     }
 
     /**
-     * 🔹 로그인 (아이디 + 비밀번호)
+     * 🔹 로그인 (평문 비교)
      */
-    public Member authenticate(String username, String password) {
+    public Member authenticate(String username, String rawPassword) {
         Member found = memberMapper.findByUsername(username);
         if (found == null) return null;
 
-        return found.getPassword().equals(password) ? found : null;
+        // 🔥 평문 비교
+        if (rawPassword.equals(found.getPassword())) {
+            return found;
+        }
+        return null;
     }
 
     /**
@@ -67,28 +78,55 @@ public class MemberService {
         Member m = memberMapper.findById(id);
         if (m == null) return null;
 
-        m.setPassword(null); // 보안 처리
+        m.setPassword(null);
         return m;
     }
 
     /**
-     * 🔥 프로필 업데이트 (이름/이메일/전화번호/경력/지역/자격증/프로필이미지 BLOB)
+     * 🔥 프로필 업데이트
      */
     public void updateProfile(Member member) {
 
-        // 1) 존재 여부 확인
         Member exist = memberMapper.findById(member.getId());
         if (exist == null) {
             throw new IllegalArgumentException("존재하지 않는 회원입니다.");
         }
 
-        // 2) 이메일 중복 검사 (자기 자신 제외)
         Member emailOwner = memberMapper.findByEmail(member.getEmail());
         if (emailOwner != null && !emailOwner.getId().equals(member.getId())) {
             throw new DuplicateEmailException("이미 사용 중인 이메일입니다.");
         }
 
-        // 3) 프로필 업데이트
         memberMapper.updateProfile(member);
+    }
+
+    /**
+     * 🔥 비밀번호 찾기 - 임시 비밀번호 발급 (암호화 제거)
+     */
+    public boolean sendTempPassword(String username, String email) {
+
+        Member member = memberMapper.findByUsername(username);
+
+        if (member == null || !member.getEmail().equals(email)) {
+            return false;
+        }
+
+        // 임시 비밀번호 생성
+        String tempPw = UUID.randomUUID().toString().substring(0, 10);
+
+        // 🔥 암호화 제거 → 평문 저장
+        memberMapper.updatePassword(username, tempPw);
+
+        // 이메일 발송
+        String title = "[JobMate] 임시 비밀번호 안내";
+        String body =
+                "안녕하세요, JobMate입니다.\n\n" +
+                "요청하신 임시 비밀번호는 다음과 같습니다.\n\n" +
+                "임시 비밀번호: " + tempPw + "\n\n" +
+                "※ 반드시 로그인 후 비밀번호를 변경해주세요.";
+
+        mailService.sendMail(email, title, body);
+
+        return true;
     }
 }

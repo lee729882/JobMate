@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpSession;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 public class DashboardController {
@@ -50,6 +51,30 @@ public class DashboardController {
         Integer total = userScoreMapper.getTotal(username);  // ⚠️ null 방지 위해 Integer 사용
         int jobmateScore = (total == null) ? 0 : total;      // ✅ null일 경우 0으로 보정
         model.addAttribute("jobmateScore", jobmateScore);    // ✅ JSP에서 ${jobmateScore} 로 표시 가능
+        
+     // ✅ 랭킹 / 상위 퍼센트 계산
+        int userRank = 0;
+        int totalUsers = 0;
+        int topPercent = 0;
+        
+        Map<String, Object> rankInfo = userScoreMapper.getRankInfo(username);
+        if (rankInfo != null) {
+            Number r = (Number) rankInfo.get("USER_RANK");
+            Number t = (Number) rankInfo.get("TOTAL_CNT");
+            if (r != null && t != null && t.intValue() > 0) {
+                userRank = r.intValue();
+                totalUsers = t.intValue();
+                // 예: 1등이면 100%, 중간이면 ~50% 이런 식으로 "상위 x%"
+                topPercent = (int) Math.round(
+                        100.0 * (totalUsers - userRank + 1) / totalUsers
+                );
+            }
+            
+        }
+            
+            model.addAttribute("userRank", userRank);
+            model.addAttribute("totalUsers", totalUsers);
+            model.addAttribute("topPercent", topPercent);
 
         // ✅ JSP 파일 경로 (/WEB-INF/views/dashboard.jsp)
         return "dashboard";

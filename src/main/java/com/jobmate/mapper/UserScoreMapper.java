@@ -1,5 +1,8 @@
 package com.jobmate.mapper;
 
+import java.util.List;
+import java.util.Map;
+
 import org.apache.ibatis.annotations.*;
 
 @Mapper
@@ -29,4 +32,32 @@ public interface UserScoreMapper {
         "  VALUES (USER_SCORE_SEQ.NEXTVAL, x.USERNAME, x.DELTA, SYSTIMESTAMP)"
     })
     void addScore(@Param("username") String username, @Param("delta") int delta);
+    
+    @Select({
+        "SELECT user_rank, total_cnt",
+        "FROM (",
+        "  SELECT USERNAME, TOTAL_SCORE,",
+        "         DENSE_RANK() OVER (ORDER BY TOTAL_SCORE DESC) AS user_rank",
+        "  FROM USER_SCORE",
+        ") s",
+        "CROSS JOIN (SELECT COUNT(*) AS total_cnt FROM USER_SCORE) c",
+        "WHERE s.USERNAME = #{username}"
+    })
+    Map<String, Object> getRankInfo(@Param("username") String username);
+    
+    @Select({
+        "SELECT * FROM (",
+        "  SELECT ",
+        "    m.NAME         AS USER_NAME,",
+        "    m.USERNAME     AS USERNAME,",
+        "    m.CAREER_TYPE  AS CAREER_TYPE,",
+        "    u.TOTAL_SCORE  AS TOTAL_SCORE,",
+        "    DENSE_RANK() OVER (ORDER BY u.TOTAL_SCORE DESC) AS RANK_IN_TYPE",
+        "  FROM USER_SCORE u",
+        "  JOIN MEMBER m ON u.USERNAME = m.USERNAME",
+        "  WHERE m.CAREER_TYPE = #{careerType}",
+        ")",
+        "ORDER BY RANK_IN_TYPE"
+    })
+    List<Map<String, Object>> findTypeRanking(@Param("careerType") String careerType);
 }
