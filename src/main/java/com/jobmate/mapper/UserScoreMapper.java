@@ -48,16 +48,18 @@ public interface UserScoreMapper {
     @Select({
         "SELECT * FROM (",
         "  SELECT ",
-        "    m.NAME         AS USER_NAME,",
-        "    m.USERNAME     AS USERNAME,",
-        "    m.CAREER_TYPE  AS CAREER_TYPE,",
-        "    u.TOTAL_SCORE  AS TOTAL_SCORE,",
-        "    DENSE_RANK() OVER (ORDER BY u.TOTAL_SCORE DESC) AS RANK_IN_TYPE",
-        "  FROM USER_SCORE u",
-        "  JOIN MEMBER m ON u.USERNAME = m.USERNAME",
+        "    m.NAME                     AS USER_NAME,",
+        "    m.USERNAME                 AS USERNAME,",
+        "    m.CAREER_TYPE              AS CAREER_TYPE,",
+        "    NVL(u.TOTAL_SCORE, 0)      AS TOTAL_SCORE,",
+        "    DENSE_RANK() OVER (",
+        "      ORDER BY NVL(u.TOTAL_SCORE, 0) DESC",
+        "    ) AS RANK_IN_TYPE",
+        "  FROM MEMBER m",
+        "  LEFT JOIN USER_SCORE u ON m.USERNAME = u.USERNAME", // ← 점수 없으면 NULL → 0 처리
         "  WHERE m.CAREER_TYPE = #{careerType}",
         ")",
-        "ORDER BY RANK_IN_TYPE"
+        "ORDER BY RANK_IN_TYPE, USER_NAME"
     })
     List<Map<String, Object>> findTypeRanking(@Param("careerType") String careerType);
 }
