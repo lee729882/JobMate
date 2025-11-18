@@ -542,21 +542,15 @@
 
 
     <!-- 카드 4 (오른쪽) -->
-<div class="card r-box" onclick="location.href='${pageContext.request.contextPath}/member/profile'">
-    <div class="r-icon-sm">⭐</div>
-    <div class="r-txt-wrap">
-        <div class="r-title">JobMate 점수</div>
-        <c:choose>
-    <c:when test="${totalUsers > 0}">
-      <p>
-        상위 ${topPercent}% (${totalUsers}명 중 ${userRank}위)
-      </p>
-    </c:when>
-    <c:otherwise>
-      <p>아직 랭킹 데이터가 없습니다.</p>
-    </c:otherwise>
-  </c:choose>
-    </div>
+<c:set var="careerLabel"
+       value="${loginMember.careerType == 'EXP' ? '경력직' : '신입'}" />
+
+<div class="card">
+  <h3>🏅 JobMate 점수</h3>
+  <p>
+    상위 ${rankTopPercent}% 
+    (${careerLabel} ${rankTotalCnt}명 중 ${myRank}위)
+  </p>
 </div>
 
 

@@ -20,20 +20,27 @@ public class DashboardController {
 
     @Autowired
     private EmploymentService employmentService;
-    
+
     @Autowired
     private FavoriteService favoriteService;
-    
+
     @Autowired
-    private UserScoreMapper userScoreMapper;  // ✅ Object 말고 정확한 타입으로 선언
+    private UserScoreMapper userScoreMapper;  // ✅ 정확한 타입
 
     /** ✅ 대시보드 페이지 */
     @GetMapping("/member/dashboard")
-    public String dashboard(@RequestParam(defaultValue = "1") int page, Model model, HttpSession session) {
+    public String dashboard(@RequestParam(defaultValue = "1") int page,
+                            Model model,
+                            HttpSession session) {
 
         // ✅ 로그인 정보 확인
         Member loginMember = (Member) session.getAttribute("loginMember");
-        if (loginMember == null) return "redirect:/member/login";
+        if (loginMember == null) {
+            return "redirect:/member/login";
+        }
+
+        String username   = loginMember.getUsername();
+        String careerType = loginMember.getCareerType();   // NEW / EXP
 
         // ✅ 고용24 API에서 공채 리스트 6개씩 가져오기
         List<EmploymentResponse> jobs = employmentService.getEmploymentList(page, 6);
@@ -41,40 +48,43 @@ public class DashboardController {
         model.addAttribute("loginMember", loginMember);
         model.addAttribute("employmentList", jobs);
         model.addAttribute("currentPage", page);
-        
+
         // ✅ 찜 개수 불러오기
         int favoriteCount = favoriteService.getFavoriteCount(loginMember.getId());
         model.addAttribute("favoriteCount", favoriteCount);
-        
-        // ✅ JobMate 점수 (username 필드명은 프로젝트에 맞게 조정)
-        String username = loginMember.getUsername();   // ← 필요 시 getEmail() 등으로 수정
-        Integer total = userScoreMapper.getTotal(username);  // ⚠️ null 방지 위해 Integer 사용
-        int jobmateScore = (total == null) ? 0 : total;      // ✅ null일 경우 0으로 보정
-        model.addAttribute("jobmateScore", jobmateScore);    // ✅ JSP에서 ${jobmateScore} 로 표시 가능
-        
-     // ✅ 랭킹 / 상위 퍼센트 계산
-        int userRank = 0;
-        int totalUsers = 0;
+
+        // ✅ JobMate 점수 (USER_SCORE 기준)
+        Integer totalScore = userScoreMapper.getTotal(username);   // null 가능
+        int jobmateScore = (totalScore == null) ? 0 : totalScore;  // null이면 0점
+        model.addAttribute("jobmateScore", jobmateScore);
+
+        // ✅ 랭킹 / 상위 퍼센트 계산 (같은 CAREER_TYPE 내에서만)
+        int myRank = 0;
+        int totalCnt = 0;
         int topPercent = 0;
-        
-        Map<String, Object> rankInfo = userScoreMapper.getRankInfo(username);
+
+        // ⭐ Mapper 쿼리는 getRankInfo(username, careerType) 로 바꿔 둔 상태여야 함
+        Map<String, Object> rankInfo = userScoreMapper.getRankInfo(username, careerType);
+
         if (rankInfo != null) {
             Number r = (Number) rankInfo.get("USER_RANK");
             Number t = (Number) rankInfo.get("TOTAL_CNT");
-            if (r != null && t != null && t.intValue() > 0) {
-                userRank = r.intValue();
-                totalUsers = t.intValue();
-                // 예: 1등이면 100%, 중간이면 ~50% 이런 식으로 "상위 x%"
-                topPercent = (int) Math.round(
-                        100.0 * (totalUsers - userRank + 1) / totalUsers
-                );
-            }
-            
+            Number s = (Number) rankInfo.get("TOTAL_SCORE");
+
+            if (r != null) myRank = r.intValue();
+            if (t != null) totalCnt = t.intValue();
+            if (s != null) jobmateScore = s.intValue();  // DB 기준 점수로 덮어쓰기(선택)
         }
-            
-            model.addAttribute("userRank", userRank);
-            model.addAttribute("totalUsers", totalUsers);
-            model.addAttribute("topPercent", topPercent);
+
+        // ✅ 상위 퍼센트 계산 (1위면 100%)
+        if (totalCnt > 0 && myRank > 0) {
+            double ratio = (double) (totalCnt - myRank + 1) / totalCnt;
+            topPercent = (int) Math.round(ratio * 100);
+        }
+
+        model.addAttribute("myRank", myRank);
+        model.addAttribute("rankTotalCnt", totalCnt);
+        model.addAttribute("rankTopPercent", topPercent);
 
         // ✅ JSP 파일 경로 (/WEB-INF/views/dashboard.jsp)
         return "dashboard";

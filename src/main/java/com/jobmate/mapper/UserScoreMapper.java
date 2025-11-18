@@ -34,16 +34,29 @@ public interface UserScoreMapper {
     void addScore(@Param("username") String username, @Param("delta") int delta);
     
     @Select({
-        "SELECT user_rank, total_cnt",
+        "SELECT user_rank, total_cnt, total_score",
         "FROM (",
-        "  SELECT USERNAME, TOTAL_SCORE,",
-        "         DENSE_RANK() OVER (ORDER BY TOTAL_SCORE DESC) AS user_rank",
-        "  FROM USER_SCORE",
+        "  SELECT ",
+        "    m.USERNAME                               AS USERNAME,",
+        "    NVL(u.TOTAL_SCORE, 0)                    AS TOTAL_SCORE,",
+        "    DENSE_RANK() OVER (",
+        "      ORDER BY NVL(u.TOTAL_SCORE, 0) DESC",
+        "    )                                        AS user_rank",
+        "  FROM MEMBER m",
+        "  LEFT JOIN USER_SCORE u ON m.USERNAME = u.USERNAME",
+        "  WHERE m.CAREER_TYPE = #{careerType}",     // ⭐ 직렬(신입/경력) 필터
         ") s",
-        "CROSS JOIN (SELECT COUNT(*) AS total_cnt FROM USER_SCORE) c",
+        "CROSS JOIN (",
+        "  SELECT COUNT(*) AS total_cnt",
+        "  FROM MEMBER",
+        "  WHERE CAREER_TYPE = #{careerType}",       // ⭐ 인원 수도 같은 직렬만
+        ") c",
         "WHERE s.USERNAME = #{username}"
     })
-    Map<String, Object> getRankInfo(@Param("username") String username);
+    Map<String, Object> getRankInfo(
+            @Param("username") String username,
+            @Param("careerType") String careerType);
+
     
     @Select({
         "SELECT * FROM (",
