@@ -1,0 +1,31 @@
+package com.jobmate.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.jobmate.domain.InterviewHistory;
+import com.jobmate.mapper.InterviewHistoryMapper;
+
+@Service
+public class InterviewHistoryServiceImpl implements InterviewHistoryService {
+
+    @Autowired
+    private InterviewHistoryMapper interviewHistoryMapper;
+
+    @Override
+    public void save(InterviewHistory history) {
+        interviewHistoryMapper.insert(history);
+    }
+
+    @Override
+    public List<InterviewHistory> getListByMember(String memberId) {
+        return interviewHistoryMapper.findByMemberId(memberId);
+    }
+
+    @Override
+    public InterviewHistory getDetail(Long id, String memberId) {
+        return interviewHistoryMapper.findByIdAndMemberId(id, memberId);
+    }
+}
