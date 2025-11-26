@@ -4,11 +4,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;   // ★ 429, 401 등 처리용
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;   // ★ 서버 시작 후 초기 확인용
+
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -39,7 +43,14 @@ public class InterviewAiService {
             System.out.println("[InterviewAiService] openAiApiKey prefix = " + prefix + "****");
         }
     }
-
+    @PostConstruct
+    public void setupRestTemplateCharset() {
+        for (HttpMessageConverter<?> c : restTemplate.getMessageConverters()) {
+            if (c instanceof StringHttpMessageConverter) {
+                ((StringHttpMessageConverter) c).setDefaultCharset(StandardCharsets.UTF_8);
+            }
+        }
+    }
     /**
      * 면접 질문 + 지원자의 답변을 받아서
      * OpenAI(ChatGPT)로 보내고 피드백 문자열을 반환
@@ -91,8 +102,9 @@ public class InterviewAiService {
 
             // === 3. OpenAI Chat Completions API 호출 ===
             String url = "https://api.openai.com/v1/chat/completions";
-            ResponseEntity<String> response =
-                    restTemplate.postForEntity(url, entity, String.class);
+            ResponseEntity<JsonNode> response =
+                    restTemplate.postForEntity(url, entity, JsonNode.class);
+
 
             // ★ 여기까지 왔다는 건 2xx 응답이라는 의미이지만,
             // 혹시 모를 상황을 위해 한 번 더 체크
@@ -102,7 +114,7 @@ public class InterviewAiService {
             }
 
             // === 4. 응답 JSON 파싱 ===
-            JsonNode root = objectMapper.readTree(response.getBody());
+            JsonNode root = response.getBody();
             JsonNode choices = root.path("choices");
 
             if (choices.isMissingNode() || !choices.isArray() || choices.size() == 0) {
