@@ -579,7 +579,10 @@
         onclick="location.href='${pageContext.request.contextPath}/member/recent/list'">
   최근 본 공고
 </button>
-    <button class="quick-btn">AI 면접 바로가기</button>
+    <button class="quick-btn"
+        onclick="location.href='${pageContext.request.contextPath}/member/interview'">
+  AI 면접 바로가기
+</button>
       <button class="quick-btn"
           onclick="location.href='${pageContext.request.contextPath}/member/ranking'">
     직렬별 랭킹

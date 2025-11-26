@@ -15,9 +15,7 @@
             http://mybatis.org/schema/mybatis-spring 
             http://mybatis.org/schema/mybatis-spring-1.2.xsd">
 
-    <!-- ========================= -->
-    <!-- HikariCP (DB 연결) 설정 -->
-    <!-- ========================= -->
+    <!-- HikariConfig -->
     <bean id="hikariConfig" class="com.zaxxer.hikari.HikariConfig">
         <property name="driverClassName" value="net.sf.log4jdbc.sql.jdbcapi.DriverSpy"/>
         <property name="jdbcUrl" value="jdbc:log4jdbc:oracle:thin:@114.70.92.70:1521:XE"/>
@@ -29,9 +27,7 @@
         <constructor-arg ref="hikariConfig"/>
     </bean>
 
-    <!-- ========================= -->
-    <!-- MyBatis 설정              -->
-    <!-- ========================= -->
+    <!-- MyBatis -->
     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
         <property name="dataSource" ref="dataSource"/>
         <property name="mapperLocations" value="classpath:mappers/*.xml"/>
@@ -42,55 +38,45 @@
         </property>
     </bean>
 
-    <!-- Mapper 인터페이스 스캔 -->
     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
         <property name="basePackage" value="com.jobmate.mapper"/>
     </bean>
 
-    <!-- ========================= -->
-    <!-- 트랜잭션 설정             -->
-    <!-- ========================= -->
+    <!-- 트랜잭션 -->
     <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
         <property name="dataSource" ref="dataSource"/>
     </bean>
 
     <tx:annotation-driven transaction-manager="transactionManager"/>
 
-    <!-- ========================= -->
-    <!-- Multipart Resolver -->
-    <!-- ========================= -->
+    <!-- 파일 업로드 -->
     <bean id="multipartResolver"
           class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
-
         <property name="maxUploadSize" value="209715200"/>
         <property name="maxUploadSizePerFile" value="52428800"/>
         <property name="maxInMemorySize" value="0"/>
         <property name="uploadTempDir" value="file:/tmp"/>
     </bean>
 
-    <!-- ========================= -->
-    <!-- @Controller/@Service 스캔 -->
-    <!-- ========================= -->
-    <context:component-scan base-package="com.jobmate"/>
+    <!-- 🔥 application.properties 사용 -->
+    <context:property-placeholder location="classpath:application.properties"/>
 
-    <!-- 선택 기능 -->
+    <!-- restTemplate -->
     <bean id="restTemplate" class="org.springframework.web.client.RestTemplate" />
-<!-- ========================= -->
-<!-- JavaMailSender (Google SMTP) -->
-<!-- ========================= -->
-<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
-    <property name="host" value="smtp.gmail.com"/>
-    <property name="port" value="587"/>
-    <property name="username" value="lee7298821@gmail.com"/>
-    <property name="password" value="pkzqhqjquaukuzrn"/>
-    
-    <property name="javaMailProperties">
-        <props>
-            <prop key="mail.smtp.auth">true</prop>
-            <prop key="mail.smtp.starttls.enable">true</prop>
-            <prop key="mail.smtp.timeout">5000</prop>
-        </props>
-    </property>
-</bean>
+
+    <!-- 메일 -->
+    <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+        <property name="host" value="smtp.gmail.com"/>
+        <property name="port" value="587"/>
+        <property name="username" value="lee7298821@gmail.com"/>
+        <property name="password" value="pkzqhqjquaukuzrn"/>
+        <property name="javaMailProperties">
+            <props>
+                <prop key="mail.smtp.auth">true</prop>
+                <prop key="mail.smtp.starttls.enable">true</prop>
+                <prop key="mail.smtp.timeout">5000</prop>
+            </props>
+        </property>
+    </bean>
 
 </beans>

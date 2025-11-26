@@ -11,9 +11,13 @@
     <!-- @Controller 활성화 -->
     <annotation-driven />
 
-    <!-- 🔥 정적 리소스 매핑 - 이게 정답 -->
+    <!-- ✅ 기존 매핑: /resources/** -> /resources/ -->
     <resources mapping="/resources/**" location="/resources/" />
 
+    <!-- ✅ [추가] 정적 리소스 매핑: /static/** -> /static/  -->
+    <!-- JS, CSS, 이미지 등 webapp/static 아래 파일들을 여기서 서빙 -->
+    <resources mapping="/static/**" location="/static/" />
+	
     <!-- View Resolver -->
     <beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
         <beans:property name="prefix" value="/WEB-INF/views/"/>
@@ -22,5 +26,7 @@
 
     <!-- Component Scan -->
     <context:component-scan base-package="com.jobmate" />
+    <!-- ✅ 추가: application.properties 읽기 -->
+    <context:property-placeholder location="classpath:application.properties"/>
 
 </beans:beans>
