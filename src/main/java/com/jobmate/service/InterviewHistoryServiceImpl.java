@@ -20,12 +20,13 @@ public class InterviewHistoryServiceImpl implements InterviewHistoryService {
     }
 
     @Override
-    public List<InterviewHistory> getListByMember(String memberId) {
+    public List<InterviewHistory> getListByMember(Long memberId) {   // ★ String -> Long
         return interviewHistoryMapper.findByMemberId(memberId);
     }
 
     @Override
-    public InterviewHistory getDetail(Long id, String memberId) {
+    public InterviewHistory getDetail(Long id, Long memberId) {      // ★ String -> Long
         return interviewHistoryMapper.findByIdAndMemberId(id, memberId);
     }
 }
+

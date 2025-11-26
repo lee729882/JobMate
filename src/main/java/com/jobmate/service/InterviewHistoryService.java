@@ -9,12 +9,9 @@ import com.jobmate.domain.InterviewHistory;
  */
 public interface InterviewHistoryService {
 
-    // 기록 저장
     void save(InterviewHistory history);
 
-    // 회원별 전체 목록
-    List<InterviewHistory> getListByMember(String memberId);
+    List<InterviewHistory> getListByMember(Long memberId);   // ★ String -> Long
 
-    // 상세보기
-    InterviewHistory getDetail(Long id, String memberId);
+    InterviewHistory getDetail(Long id, Long memberId);      // ★ String -> Long
 }

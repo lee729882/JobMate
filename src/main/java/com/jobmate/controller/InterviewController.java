@@ -14,15 +14,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * 면접 AI 연습 + 기록 조회 컨트롤러
- *
- * 실제 접속 URL 예시 (contextPath = /controller 일 때)
- *  - 면접 연습 화면     : GET  /controller/member/interview
- *  - 피드백 요청(AJAX) : POST /controller/member/interview/feedback
- *  - 기록 목록         : GET  /controller/member/interview/history
- *  - 기록 상세         : GET  /controller/member/interview/history/{id}
- */
 @Controller
 @RequestMapping("/member/interview")
 public class InterviewController {
@@ -33,22 +24,11 @@ public class InterviewController {
     @Autowired
     private InterviewHistoryService interviewHistoryService;
 
-    /**
-     * 면접 AI 연습 화면
-     * GET /controller/member/interview
-     */
     @GetMapping
     public String interviewPage() {
-        return "member/interview"; // /WEB-INF/views/member/interview.jsp
+        return "member/interview";
     }
 
-    /**
-     * 면접 질문/답변을 받아 AI 피드백을 생성하고 DB에 기록까지 저장
-     *
-     * POST /controller/member/interview/feedback
-     * 요청: JSON { "question": "...", "answer": "..." }
-     * 응답: JSON { "feedback": "..." }
-     */
     @PostMapping("/feedback")
     @ResponseBody
     public InterviewResponse getInterviewFeedback(@RequestBody InterviewRequest req,
@@ -57,67 +37,70 @@ public class InterviewController {
         String question = req.getQuestion();
         String answer   = req.getAnswer();
 
-        // ★ 로그인 사용자 username 가져오기 (없으면 guest)
-        String memberId = "guest";
+        // ✅ 로그인 사용자 PK(Long) 가져오기
+        Long memberId = null;
 
-        Object loginObj = session.getAttribute("loginMember"); // 세션 키는 프로젝트에 맞게
+        Object loginObj = session.getAttribute("loginMember");
         if (loginObj instanceof Member) {
             Member loginMember = (Member) loginObj;
-            memberId = loginMember.getUsername();   // ✅ username 사용
+            memberId = loginMember.getId();   // ★ getId() (PK) 사용
         }
 
-        // ① AI 피드백 생성
+        // ✅ 비로그인(guest)은 저장하지 않도록 처리 (NOT NULL 대응)
+        if (memberId == null) {
+            return new InterviewResponse("로그인 후 이용 가능합니다.");
+        }
+
         String feedback = interviewAiService.getFeedback(question, answer);
 
-        // ② DB에 기록 저장
         InterviewHistory history = new InterviewHistory();
-        history.setMemberId(memberId);  // InterviewHistory.memberId = String 가정
+        history.setMemberId(memberId);   // ★ InterviewHistory.memberId 를 Long으로 바꾼다는 전제
         history.setQuestion(question);
         history.setAnswer(answer);
         history.setFeedback(feedback);
 
         interviewHistoryService.save(history);
 
-        // ③ 클라이언트로 피드백만 반환
         return new InterviewResponse(feedback);
     }
 
-    /**
-     * 내 면접 기록 목록 페이지
-     * GET /controller/member/interview/history
-     */
     @GetMapping("/history")
     public String historyList(HttpSession session, Model model) {
 
-        String memberId = "guest";
+        Long memberId = null;
 
         Object loginObj = session.getAttribute("loginMember");
         if (loginObj instanceof Member) {
             Member loginMember = (Member) loginObj;
-            memberId = loginMember.getUsername();   // ✅ username 사용
+            memberId = loginMember.getId();
+        }
+
+        if (memberId == null) {
+            model.addAttribute("historyList", java.util.Collections.emptyList());
+            return "member/interview_history";
         }
 
         model.addAttribute("historyList",
                 interviewHistoryService.getListByMember(memberId));
 
-        return "member/interview_history";  // /WEB-INF/views/member/interview_history.jsp
+        return "member/interview_history";
     }
 
-    /**
-     * 내 면접 기록 상세 페이지
-     * GET /controller/member/interview/history/{id}
-     */
     @GetMapping("/history/{id}")
     public String historyDetail(@PathVariable("id") Long id,
                                 HttpSession session,
                                 Model model) {
 
-        String memberId = "guest";
+        Long memberId = null;
 
         Object loginObj = session.getAttribute("loginMember");
         if (loginObj instanceof Member) {
             Member loginMember = (Member) loginObj;
-            memberId = loginMember.getUsername();   // ✅ username 사용
+            memberId = loginMember.getId();
+        }
+
+        if (memberId == null) {
+            return "redirect:/member/login";
         }
 
         InterviewHistory history =
@@ -125,6 +108,6 @@ public class InterviewController {
 
         model.addAttribute("history", history);
 
-        return "member/interview_history_detail";  // /WEB-INF/views/member/interview_history_detail.jsp
+        return "member/interview_history_detail";
     }
 }

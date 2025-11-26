@@ -11,13 +11,10 @@ import com.jobmate.domain.InterviewHistory;
  */
 public interface InterviewHistoryMapper {
 
-    // ① 새 기록 저장
     void insert(InterviewHistory history);
 
-    // ② 로그인 아이디로 전체 목록 조회
-    List<InterviewHistory> findByMemberId(@Param("memberId") String memberId);
+    List<InterviewHistory> findByMemberId(@Param("memberId") Long memberId); // ★ String -> Long
 
-    // ③ 상세보기 (id + memberId로 방어)
     InterviewHistory findByIdAndMemberId(@Param("id") Long id,
-                                          @Param("memberId") String memberId);
+                                         @Param("memberId") Long memberId); // ★ String -> Long
 }
