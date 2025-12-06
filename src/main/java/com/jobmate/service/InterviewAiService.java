@@ -1,158 +1,144 @@
 package com.jobmate.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;   // ★ 429, 401 등 처리용
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.PostConstruct;   // ★ 서버 시작 후 초기 확인용
-
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
- * 면접 AI 피드백을 담당하는 서비스 클래스
+ * 면접 AI 서비스
+ *  - 랜덤 질문 생성 (로컬)
+ *  - OpenAI API를 이용한 피드백 생성
  */
 @Service
 public class InterviewAiService {
 
-    // ★ application.properties 에서 OpenAI API 키를 읽어옴
-    //    application.properties 에는 다음처럼 설정되어 있어야 함:
-    //    openai.api.key=sk-... (실제 키)
+    // application.properties 등에 정의했다고 가정
+    // openai.api.key=sk-xxxx...
     @Value("${openai.api.key}")
     private String openAiApiKey;
 
-    // ★ Java 8 호환: RestTemplate + Jackson 사용
     private final RestTemplate restTemplate = new RestTemplate();
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    // ★ 서버가 뜰 때 한 번만 실행되어 키가 제대로 주입됐는지 확인
-    @PostConstruct
-    public void init() {
-        if (openAiApiKey == null) {
-            System.out.println("[InterviewAiService] openAiApiKey = null");
-        } else {
-            String prefix = openAiApiKey.length() > 10
-                    ? openAiApiKey.substring(0, 10)
-                    : openAiApiKey;
-            System.out.println("[InterviewAiService] openAiApiKey prefix = " + prefix + "****");
-        }
-    }
-    @PostConstruct
-    public void setupRestTemplateCharset() {
-        for (HttpMessageConverter<?> c : restTemplate.getMessageConverters()) {
-            if (c instanceof StringHttpMessageConverter) {
-                ((StringHttpMessageConverter) c).setDefaultCharset(StandardCharsets.UTF_8);
-            }
-        }
-    }
+    private static final String OPENAI_URL = "https://api.openai.com/v1/chat/completions";
+
     /**
-     * 면접 질문 + 지원자의 답변을 받아서
-     * OpenAI(ChatGPT)로 보내고 피드백 문자열을 반환
+     * 면접 답변에 대한 AI 피드백 생성
      */
     public String getFeedback(String question, String answer) {
+
+        // 1) 방어 코드: 질문/답변이 비어 있으면 바로 리턴
+        if (question == null || question.trim().isEmpty()
+                || answer == null || answer.trim().isEmpty()) {
+            return "질문과 답변을 모두 입력해야 AI 피드백을 생성할 수 있습니다.";
+        }
+
+        // 2) OpenAI 요청 바디 구성
+        Map<String, Object> body = new HashMap<>();
+        body.put("model", "gpt-4o-mini");   // 사용 중인 모델 이름
+
+        List<Map<String, String>> messages = new ArrayList<>();
+
+        messages.add(Map.of(
+                "role", "system",
+                "content", "당신은 신입 개발자/취업 준비생을 돕는 면접관입니다. "
+                         + "지원자의 답변을 보고 장점·보완점·예시 답변을 한국어로 정리해 주세요. "
+                         + "너무 길지 않게, 항목별로 보기 좋게 bullet 형식으로 적어 주세요."
+        ));
+
+        String userContent =
+                "면접 질문: " + question + "\n\n" +
+                "지원자 답변: " + answer + "\n\n" +
+                "위 답변에 대한 피드백을 작성해 주세요.";
+
+        messages.add(Map.of(
+                "role", "user",
+                "content", userContent
+        ));
+
+        body.put("messages", messages);
+        body.put("max_tokens", 500);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Bearer " + openAiApiKey);
+        
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+
         try {
-            // ★ ChatGPT에게 전달할 프롬프트 구성
-            String prompt =
-                    "당신은 한국어를 사용하는 인사 담당 면접관입니다. " +
-                    "아래 면접 질문과 지원자의 답변을 보고, " +
-                    "1) 답변의 장점, 2) 보완할 점, 3) 더 좋게 말할 수 있는 예시 한두 문장을 " +
-                    "10줄 이내로 한국어로 간단히 정리해 주세요.\n\n" +
-                    "질문: " + question + "\n" +
-                    "지원자 답변: " + answer;
+            // 3) OpenAI API 호출
+            ResponseEntity<Map> response =
+                    restTemplate.postForEntity(OPENAI_URL, entity, Map.class);
 
-            // === 1. 요청 바디(body) 생성 ===
-            Map<String, Object> body = new HashMap<>();
-
-            // 사용할 OpenAI 모델 (경량 + 저렴한 gpt-4o-mini)
-            body.put("model", "gpt-4o-mini");  // ★ 필요하면 gpt-4o 등으로 교체 가능
-
-            // messages 배열 (system + user)
-            List<Map<String, String>> messages = new ArrayList<>();
-
-            // 역할 설명
-            Map<String, String> systemMsg = new HashMap<>();
-            systemMsg.put("role", "system");
-            systemMsg.put("content", "당신은 한국 기업의 인사 담당 면접관입니다.");
-            messages.add(systemMsg);
-
-            // 실제 질의 내용
-            Map<String, String> userMsg = new HashMap<>();
-            userMsg.put("role", "user");
-            userMsg.put("content", prompt);
-            messages.add(userMsg);
-
-            body.put("messages", messages);
-            body.put("max_tokens", 512);   // ★ 응답 최대 길이
-            body.put("temperature", 0.4);  // ★ 창의성(0~2). 낮을수록 보수적
-
-            // === 2. HTTP 헤더 설정 ===
-            HttpHeaders headers = new HttpHeaders();
-         // ✅ 수정 코드
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            // setBearerAuth() 를 지원하지 않는 스프링 버전이라서 직접 Authorization 헤더를 설정
-            headers.add("Authorization", "Bearer " + openAiApiKey);
-
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
-
-            // === 3. OpenAI Chat Completions API 호출 ===
-            String url = "https://api.openai.com/v1/chat/completions";
-            ResponseEntity<JsonNode> response =
-                    restTemplate.postForEntity(url, entity, JsonNode.class);
-
-
-            // ★ 여기까지 왔다는 건 2xx 응답이라는 의미이지만,
-            // 혹시 모를 상황을 위해 한 번 더 체크
-            if (!response.getStatusCode().is2xxSuccessful()) {
-                return "AI 피드백을 가져오는 중 오류가 발생했습니다. (status: "
-                        + response.getStatusCodeValue() + ")";
+            if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+                return "AI 피드백 생성 중 오류가 발생했습니다. (응답이 올바르지 않습니다)";
             }
 
-            // === 4. 응답 JSON 파싱 ===
-            JsonNode root = response.getBody();
-            JsonNode choices = root.path("choices");
-
-            if (choices.isMissingNode() || !choices.isArray() || choices.size() == 0) {
-                return "AI 응답이 비어 있습니다.";
+            // 4) 응답 파싱: choices[0].message.content
+            Map<String, Object> resBody = response.getBody();
+            List<Map<String, Object>> choices =
+                    (List<Map<String, Object>>) resBody.get("choices");
+            if (choices == null || choices.isEmpty()) {
+                return "AI 피드백 생성 중 오류가 발생했습니다. (choices 비어 있음)";
             }
 
-            String content = choices.get(0)
-                    .path("message")
-                    .path("content")
-                    .asText();
+            Map<String, Object> first = choices.get(0);
+            Map<String, Object> message =
+                    (Map<String, Object>) first.get("message");
+            if (message == null) {
+                return "AI 피드백 생성 중 오류가 발생했습니다. (message 없음)";
+            }
 
-            return content != null ? content.trim() : "AI 응답이 비어 있습니다.";
+            Object contentObj = message.get("content");
+            String content = (contentObj != null) ? contentObj.toString() : null;
+
+            if (content == null || content.trim().isEmpty()) {
+                return "AI 피드백 생성 중 오류가 발생했습니다. (content 비어 있음)";
+            }
+
+            return content.trim();
 
         } catch (HttpClientErrorException e) {
-            // ★ OpenAI가 4xx 에러를 줄 때(401, 429 등) 여기로 들어옴
-            System.out.println("[InterviewAiService] status = " + e.getStatusCode());
-            System.out.println("[InterviewAiService] body   = " + e.getResponseBodyAsString());
-
+            // ✅ 여기서 429/402 등을 친절한 문구로 변환
             if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
-                // 429: 요청이 너무 많거나, 요금제/크레딧 한도 초과
-                return "OpenAI 요청 한도(또는 크레딧)를 초과했습니다. " +
-                       "OpenAI 대시보드의 Billing/Usage 설정을 확인한 뒤, 잠시 후 다시 시도해 주세요.";
-            } else if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
-                // 401: API 키가 잘못됐거나 권한 없음
-                return "OpenAI API 키가 잘못되었거나 권한이 없습니다. 서버 설정을 확인해 주세요.";
-            } else if (e.getStatusCode() == HttpStatus.FORBIDDEN) {
-                // 403: 프로젝트 설정/권한 문제
-                return "OpenAI 프로젝트 권한 문제로 요청이 거부되었습니다. 프로젝트 설정을 확인해 주세요.";
-            } else {
-                // 그 외 4xx
-                return "AI 서버에서 오류가 발생했습니다. (HTTP " +
-                        e.getStatusCode().value() + ")";
+                return "현재 OpenAI 사용량 제한(429)으로 인해 실시간 피드백을 생성할 수 없습니다.\n"
+                        + "잠시 후 다시 시도해 주세요.";
+            }
+            if (e.getStatusCode() == HttpStatus.PAYMENT_REQUIRED) {
+                return "OpenAI 계정의 크레딧 또는 결제 한도가 초과되어 AI 피드백을 생성할 수 없습니다.\n"
+                        + "관리자에게 문의해 주세요.";
             }
 
+            // 그 외 HTTP 에러
+            e.printStackTrace();
+            return "AI 피드백 생성 중 HTTP 오류가 발생했습니다. ("
+                    + e.getStatusCode().value() + " " + e.getStatusCode().getReasonPhrase() + ")";
         } catch (Exception e) {
-            // ★ 네트워크 문제, 파싱 오류 등 기타 예외
+            // 기타 예외
             e.printStackTrace();
             return "AI 피드백 생성 중 예기치 못한 오류가 발생했습니다.";
         }
+    }
+
+    /**
+     * 랜덤 면접 질문 생성 (로컬에서만, OpenAI 호출 X)
+     */
+    public String getRandomQuestion(String position, String careerType) {
+
+        // 직무/경력에 따라 분기할 수도 있고, 일단 간단한 배열 사용
+        List<String> baseQuestions = Arrays.asList(
+                "본인의 강점과 약점에 대해 말씀해 주세요.",
+                "팀 프로젝트에서 본인이 맡았던 역할과 기여한 점을 설명해 주세요.",
+                "우리 회사(지원 회사)에 지원한 이유와 입사 후 목표를 말해 주세요.",
+                "최근에 경험했던 가장 어려웠던 문제와, 이를 어떻게 해결했는지 설명해 주세요.",
+                "본인이 했던 프로젝트 중 가장 기억에 남는 프로젝트를 소개해 주세요."
+        );
+
+        // 필요하면 position / careerType에 따라 다른 리스트를 선택해도 됨
+        Random rnd = new Random();
+        return baseQuestions.get(rnd.nextInt(baseQuestions.size()));
     }
 }

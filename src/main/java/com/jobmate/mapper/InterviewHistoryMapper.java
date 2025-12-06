@@ -6,15 +6,15 @@ import org.apache.ibatis.annotations.Param;
 
 import com.jobmate.domain.InterviewHistory;
 
-/**
- * 면접 기록 Mapper
- */
 public interface InterviewHistoryMapper {
 
+    // 새 기록 저장
     void insert(InterviewHistory history);
 
-    List<InterviewHistory> findByMemberId(@Param("memberId") Long memberId); // ★ String -> Long
+    // ✅ memberId를 Long으로
+    List<InterviewHistory> findByMemberId(@Param("memberId") Long memberId);
 
+    // ✅ 여기도 Long으로
     InterviewHistory findByIdAndMemberId(@Param("id") Long id,
-                                         @Param("memberId") Long memberId); // ★ String -> Long
+                                         @Param("memberId") Long memberId);
 }

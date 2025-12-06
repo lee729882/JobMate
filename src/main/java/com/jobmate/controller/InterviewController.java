@@ -1,5 +1,8 @@
 package com.jobmate.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.servlet.http.HttpSession;
 
 import com.jobmate.domain.InterviewHistory;
@@ -24,11 +27,13 @@ public class InterviewController {
     @Autowired
     private InterviewHistoryService interviewHistoryService;
 
+    /** 면접 AI 연습 화면 */
     @GetMapping
     public String interviewPage() {
         return "member/interview";
     }
 
+    /** 피드백 + 기록 저장 */
     @PostMapping("/feedback")
     @ResponseBody
     public InterviewResponse getInterviewFeedback(@RequestBody InterviewRequest req,
@@ -37,42 +42,44 @@ public class InterviewController {
         String question = req.getQuestion();
         String answer   = req.getAnswer();
 
-        // ✅ 로그인 사용자 PK(Long) 가져오기
+        // 로그인 회원 PK(Long) 추출
         Long memberId = null;
-
         Object loginObj = session.getAttribute("loginMember");
+
         if (loginObj instanceof Member) {
             Member loginMember = (Member) loginObj;
-            memberId = loginMember.getId();   // ★ getId() (PK) 사용
+            memberId = loginMember.getId();            // ★ PK(Long)
         }
 
-        // ✅ 비로그인(guest)은 저장하지 않도록 처리 (NOT NULL 대응)
         if (memberId == null) {
             return new InterviewResponse("로그인 후 이용 가능합니다.");
         }
 
+        // 1) AI 피드백 생성 (예외는 내부에서 처리하도록 구현)
         String feedback = interviewAiService.getFeedback(question, answer);
 
+        // 2) DB 저장
         InterviewHistory history = new InterviewHistory();
-        history.setMemberId(memberId);   // ★ InterviewHistory.memberId 를 Long으로 바꾼다는 전제
+        history.setMemberId(memberId);
         history.setQuestion(question);
         history.setAnswer(answer);
         history.setFeedback(feedback);
 
         interviewHistoryService.save(history);
 
+        // 3) 피드백 반환
         return new InterviewResponse(feedback);
     }
 
+    /** 내 면접 기록 목록 */
     @GetMapping("/history")
     public String historyList(HttpSession session, Model model) {
 
         Long memberId = null;
-
         Object loginObj = session.getAttribute("loginMember");
+
         if (loginObj instanceof Member) {
-            Member loginMember = (Member) loginObj;
-            memberId = loginMember.getId();
+            memberId = ((Member) loginObj).getId();
         }
 
         if (memberId == null) {
@@ -86,17 +93,17 @@ public class InterviewController {
         return "member/interview_history";
     }
 
+    /** 내 면접 기록 상세 */
     @GetMapping("/history/{id}")
     public String historyDetail(@PathVariable("id") Long id,
                                 HttpSession session,
                                 Model model) {
 
         Long memberId = null;
-
         Object loginObj = session.getAttribute("loginMember");
+
         if (loginObj instanceof Member) {
-            Member loginMember = (Member) loginObj;
-            memberId = loginMember.getId();
+            memberId = ((Member) loginObj).getId();
         }
 
         if (memberId == null) {
@@ -109,5 +116,22 @@ public class InterviewController {
         model.addAttribute("history", history);
 
         return "member/interview_history_detail";
+    }
+
+    /** 랜덤 질문 API */
+    @PostMapping("/question")
+    @ResponseBody
+    public Map<String, String> getRandomQuestion(HttpSession session) {
+
+        Member loginMember = (Member) session.getAttribute("loginMember");
+        String careerType = (loginMember != null) ? loginMember.getCareerType() : null;
+
+        String position = "서버·네트워크 개발 직무";
+
+        String question = interviewAiService.getRandomQuestion(position, careerType);
+
+        Map<String, String> result = new HashMap<>();
+        result.put("question", question);
+        return result;
     }
 }

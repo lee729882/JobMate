@@ -7,49 +7,59 @@
 
     <!-- 공통 매핑 -->
     <resultMap id="InterviewHistoryMap" type="com.jobmate.domain.InterviewHistory">
-        <id     property="id"        column="id"/>
-        <result property="memberId"  column="member_id"/>
-        <result property="question"  column="question"/>
-        <result property="answer"    column="answer"/>
-        <result property="feedback"  column="feedback"/>
+        <id property="id" column="id"/>
+        <result property="memberId" column="member_id"/>   <!-- ★ Long -->
+        <result property="question" column="question"/>
+        <result property="answer" column="answer"/>
+        <result property="feedback" column="feedback"/>
         <result property="createdAt" column="created_at"/>
     </resultMap>
 
-    <!-- ① INSERT : Oracle 시퀀스 사용 -->
+    <!-- INSERT -->
     <insert id="insert" parameterType="com.jobmate.domain.InterviewHistory">
-        <selectKey resultType="long" keyProperty="id" order="BEFORE">
-            SELECT interview_history_seq.NEXTVAL FROM dual
-        </selectKey>
-
-        INSERT INTO interview_history
-            (id, member_id, question, answer, feedback, created_at)
-        VALUES
-            (#{id}, #{memberId}, #{question}, #{answer}, #{feedback}, SYSDATE)
+        INSERT INTO interview_history (
+              id,
+              member_id,
+              question,
+              answer,
+              feedback,
+              created_at
+        ) VALUES (
+              interview_history_seq.NEXTVAL,
+              #{memberId,jdbcType=BIGINT},  <!-- ★ Long 사용 -->
+              #{question},
+              #{answer},
+              #{feedback},
+              SYSDATE
+        )
     </insert>
 
-    <!-- ② 회원별 전체 목록 -->
-    <select id="findByMemberId" parameterType="long"
-            resultMap="InterviewHistoryMap">
+    <!-- 로그인한 회원의 전체 기록 -->
+    <select id="findByMemberId" resultMap="InterviewHistoryMap">
         SELECT
-            id, member_id, question, answer, feedback, created_at
-        FROM
-            interview_history
-        WHERE
-            member_id = #{memberId}
-        ORDER BY
-            created_at DESC
+            id,
+            member_id,
+            question,
+            answer,
+            feedback,
+            created_at
+        FROM interview_history
+        WHERE member_id = #{memberId}
+        ORDER BY created_at DESC
     </select>
 
-    <!-- ③ 상세보기 -->
-    <select id="findByIdAndMemberId"
-            resultMap="InterviewHistoryMap">
+    <!-- 내 기록 상세 -->
+    <select id="findByIdAndMemberId" resultMap="InterviewHistoryMap">
         SELECT
-            id, member_id, question, answer, feedback, created_at
-        FROM
-            interview_history
-        WHERE
-            id        = #{id}
-        AND member_id = #{memberId}
+            id,
+            member_id,
+            question,
+            answer,
+            feedback,
+            created_at
+        FROM interview_history
+        WHERE id = #{id}
+          AND member_id = #{memberId}
     </select>
 
 </mapper>
