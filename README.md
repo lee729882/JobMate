@@ -1,4 +1,4 @@
-<img width="1919" height="955" alt="1" src="https://github.com/user-attachments/assets/2fbc030b-2aec-4679-a078-40e60c909bd3" /># 🎯 Catcher: 취업 기회 포착 및 일정 관리 시스템
+## 🎯 Catcher: 취업 기회 포착 및 일정 관리 시스템
 
 ![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
 ![Spring](https://img.shields.io/badge/Spring-6DB33F?style=for-the-badge&logo=spring&logoColor=white)
